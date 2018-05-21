@@ -16,6 +16,72 @@ struct Vertex
 };
 
 
+//henger kirajzolása
+std::vector<Vertex> createCylinder(std::size_t definition) {
+    const double radius = 0.5; //kör sugár
+
+    std::vector<Vertex> vertices;
+
+    const glm::vec3 bottom(0, 0, 0);
+    vertices.push_back(Vertex{ bottom, bottom });
+
+    for (std::size_t i = 0; i < definition; ++i){
+        //körgyûrû egy pontja
+        Vertex v;
+        double u = i / static_cast<double>(definition); //vetítés 0-1 közé
+        u *= 2 * M_PI; //teljes kör rajzolása
+        // alja
+        v.p = glm::vec3(radius * std::cos(u), 0, radius * std::sin(u));
+        v.c = glm::normalize(v.p);
+        vertices.push_back(v);
+        // teteje
+        v.p += glm::vec3(0, 4, 0);
+        v.c = glm::normalize(v.p);
+        vertices.push_back(v);
+    }
+
+    const glm::vec3 top(0, 6, 0);
+    vertices.push_back(Vertex{ top, top });
+
+    return vertices;
+}
+
+
+std::vector<GLushort> createCylinderIndices(std::size_t definition) {
+    const std::size_t definition2 = definition * 2;
+    std::vector<GLushort> indices; 
+
+    GLushort origin = 0; //körlap középpont
+    GLushort top = definition2 + 1; //kúp csúcsa
+
+    for (GLushort j = origin; j < definition2; j+=2)
+    {
+        //körlapon lévõ háromszövek
+        indices.push_back((j + 3) % definition2);
+        indices.push_back(origin);
+        indices.push_back(j + 1);
+
+
+        //fölsõ csúccsal való összekötés
+        indices.push_back(j + 2);
+        indices.push_back(top);
+        indices.push_back(((j + 2) % definition2) + 2);
+
+        //körlapok összekötése
+        indices.push_back((j + 3) % definition2);
+        indices.push_back(j + 1);
+        indices.push_back(j + 2);
+
+        indices.push_back((j + 3) % definition2);
+        indices.push_back(j + 2);
+        indices.push_back(((j + 2) % definition2) + 2);
+    }
+
+    return indices;
+}
+
+
+//négyzet pontok kirajzolása
 std::vector<Vertex> createPlane(std::size_t definition)
 {
     std::vector<Vertex> vertices;
@@ -114,25 +180,35 @@ bool CMyApp::Init()
 
 	// vertexek pozíciói:
 	/*
-	Az m_gpuBufferPos konstruktora már létrehozott egy GPU puffer azonosítót és a most következõ BufferData hívás ezt
-	1. bind-olni fogja GL_ARRAY_BUFFER target-re (hiszen m_gpuBufferPos típusa ArrayBuffer) és
+	Az m_waterPlaneVertices konstruktora már létrehozott egy GPU puffer azonosítót és a most következõ BufferData hívás ezt
+	1. bind-olni fogja GL_ARRAY_BUFFER target-re (hiszen m_waterPlaneVertices típusa ArrayBuffer) és
 	2. glBufferData segítségével áttölti a GPU-ra az argumentumban adott tároló értékeit
 
 	*/
     const std::size_t waterPlaneDefinition = 200;
     const auto waterPlaneVertices = createPlane(waterPlaneDefinition);
-	m_gpuBufferPos.BufferData(waterPlaneVertices);
-    m_gpuBufferIndices.BufferData(createIndices(waterPlaneDefinition));
+	m_waterPlaneVertices.BufferData(waterPlaneVertices);
+    m_waterPlaneIndices.BufferData(createIndices(waterPlaneDefinition));
 
-    m_light1 = glm::vec3(waterPlaneVertices.front().p.x, 3, waterPlaneVertices.front().p.z);
-    m_light2 = glm::vec3(waterPlaneVertices.back().p.x, 3.0, waterPlaneVertices.back().p.z);
+    m_light1 = glm::vec3(waterPlaneVertices.front().p.x, 6, waterPlaneVertices.front().p.z);
+    m_light2 = glm::vec3(waterPlaneVertices.back().p.x, 6.0, waterPlaneVertices.back().p.z);
 
 	// geometria VAO-ban való regisztrálása
-    m_vao.Init({
-        {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_gpuBufferPos},
-        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos},
-        {CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos}
-    }, m_gpuBufferIndices);
+    m_waterPlaneVao.Init({
+        {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_waterPlaneVertices},
+        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_waterPlaneVertices},
+        {CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_waterPlaneVertices}
+    }, m_waterPlaneIndices);
+
+    const std::size_t lighthouseDefinition = 100;
+    m_lighthouseVertices.BufferData(createCylinder(lighthouseDefinition));
+    m_lighthouseIndices.BufferData(createCylinderIndices(lighthouseDefinition));
+
+    m_lighthouseVao.Init({
+        { CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_lighthouseVertices },
+        { CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_lighthouseVertices },
+        { CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_lighthouseVertices }
+    }, m_lighthouseIndices);
 
 	// skybox
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -227,19 +303,11 @@ void CMyApp::Render()
 	// töröljük a frampuffert (GL_COLOR_BUFFER_BIT) és a mélységi Z puffert (GL_DEPTH_BUFFER_BIT)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// water plane
-	m_vao.Bind();
-
 	m_program.Use();
 
-	glm::mat4 cubeWorld = glm::scale(glm::vec3(-1,-1,-1));	// kifordítjuk, mert egyébként "kívül a belül"
-    glm::mat4 MVP = m_camera.GetViewProj() * cubeWorld;
+    glm::mat4 MVP = m_camera.GetViewProj();
 	m_program.SetUniform("MVP", MVP);
     m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
-    m_program.SetUniform("mode", 1);
-
-    m_program.SetTexture("texture_", 0, m_waterTexture);
-    m_program.SetTexture("normalMap", 1, m_waterNormalMap);
 
     m_program.SetUniform("eye_pos", m_camera.GetEye());
     glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
@@ -247,10 +315,35 @@ void CMyApp::Render()
     m_program.SetUniform("light1_pos", light1);
     m_program.SetUniform("light2_pos", light2);
 
-	glDrawElements(GL_TRIANGLES, m_gpuBufferIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+    m_lighthouseVao.Bind();
+    m_program.SetUniform("mode", 0);
+    m_program.SetUniform("use_texture", GL_FALSE);
+
+    glDrawElements(GL_TRIANGLES, m_lighthouseIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+
+    glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
+    m_program.SetUniform("MVP", MVP * tr);
+    glDrawElements(GL_TRIANGLES, m_lighthouseIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+
+    m_lighthouseVao.Unbind();
+
+    // water plane
+    m_waterPlaneVao.Bind();
+
+    m_program.SetUniform("MVP", MVP);
+
+    m_program.SetUniform("mode", 1);
+
+    m_program.SetTexture("texture_", 0, m_waterTexture);
+    m_program.SetTexture("normalMap", 1, m_waterNormalMap);
+
+    m_program.SetUniform("use_texture", GL_TRUE);
+
+    glDrawElements(GL_TRIANGLES, m_waterPlaneIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+
+    m_waterPlaneVao.Unbind();
 
     m_program.Unuse();
-    m_vao.Unbind();
 
 	//TODO: skybox
 

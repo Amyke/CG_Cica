@@ -49,9 +49,13 @@ protected:
 	ProgramObject		m_program;			// shaderek programja
 	ProgramObject		m_programSkybox;	// skybox shaderek
 
-	VertexArrayObject	m_vao;				// VAO objektum
-	IndexBuffer			m_gpuBufferIndices;	// indexek
-	ArrayBuffer			m_gpuBufferPos;		// pozíciók tömbje
+	VertexArrayObject	m_waterPlaneVao;      // VAO objektum
+	IndexBuffer			m_waterPlaneIndices;  // indexek
+	ArrayBuffer			m_waterPlaneVertices; // pozíciók tömbje
+
+    VertexArrayObject   m_lighthouseVao;
+    IndexBuffer         m_lighthouseIndices;
+    ArrayBuffer         m_lighthouseVertices;
 
 	gCamera				m_camera;
 

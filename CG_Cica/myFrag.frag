@@ -14,6 +14,8 @@ uniform vec3 eye_pos;
 uniform vec3 light1_pos;
 uniform vec3 light2_pos;
 
+uniform bool use_texture;
+
 vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 {
 	vec4 La = vec4(0.2, 0.2, 0.2, 1);
@@ -46,8 +48,15 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 void main()
 {
 	vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
-	fs_out_col = texture(texture_, vs_out_texture)
-		* (getPointLight(light1_pos, vs_out_pos, normalFromMap)
-		  + getPointLight(light2_pos, vs_out_pos, normalFromMap)
-		  );
+	vec4 lights =
+		getPointLight(light1_pos, vs_out_pos, normalFromMap) +
+		getPointLight(light2_pos, vs_out_pos, normalFromMap);
+	if (use_texture)
+	{
+		fs_out_col = texture(texture_, vs_out_texture) * lights;
+	}
+	else
+	{
+		fs_out_col = vs_out_col * lights;
+	}
 }
