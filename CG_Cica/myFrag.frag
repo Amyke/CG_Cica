@@ -7,6 +7,8 @@ in vec2 vs_out_texture;
 
 out vec4 fs_out_col;
 
+uniform mat4 worldIT;
+
 uniform sampler2D texture_;
 uniform sampler2D normalMap;
 
@@ -48,9 +50,10 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 void main()
 {
 	vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
+	vec4 norm = worldIT * vec4(normalFromMap, 0);
 	vec4 lights =
-		getPointLight(light1_pos, vs_out_pos, normalFromMap) +
-		getPointLight(light2_pos, vs_out_pos, normalFromMap);
+		getPointLight(light1_pos, vs_out_pos, norm.xyz) +
+		getPointLight(light2_pos, vs_out_pos, norm.xyz);
 	if (use_texture)
 	{
 		fs_out_col = texture(texture_, vs_out_texture) * lights;

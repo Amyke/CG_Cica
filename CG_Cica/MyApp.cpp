@@ -309,6 +309,9 @@ void CMyApp::Render()
 	m_program.SetUniform("MVP", MVP);
     m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
 
+    glm::mat4 worldIT = glm::transpose(glm::inverse(glm::mat4(1)));
+    m_program.SetUniform("worldIT", worldIT);
+
     m_program.SetUniform("eye_pos", m_camera.GetEye());
     glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
     glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
@@ -323,6 +326,8 @@ void CMyApp::Render()
 
     glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
     m_program.SetUniform("MVP", MVP * tr);
+    glm::mat4 trIT = glm::transpose(glm::inverse(tr));
+    m_program.SetUniform("worldIT", trIT);
     glDrawElements(GL_TRIANGLES, m_lighthouseIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
     m_lighthouseVao.Unbind();
@@ -331,6 +336,7 @@ void CMyApp::Render()
     m_waterPlaneVao.Bind();
 
     m_program.SetUniform("MVP", MVP);
+    m_program.SetUniform("worldIT", worldIT);
 
     m_program.SetUniform("mode", 1);
 
