@@ -60,6 +60,7 @@ protected:
 
 	// nyers OGL azonosítók
     GLuint              m_waterTexture;
+    GLuint              m_waterNormalMap;
 	GLuint				m_skyboxTexture;
 };
 

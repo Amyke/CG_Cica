@@ -8,6 +8,7 @@ in vec2 vs_out_texture;
 out vec4 fs_out_col;
 
 uniform sampler2D texture_;
+uniform sampler2D normalMap;
 
 uniform vec3 eye_pos;
 uniform vec3 light1_pos;
@@ -19,16 +20,16 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 	vec4 Ka = vec4(1, 1, 1, 1);
 	vec4 ambient = La * Ka;
 
-	vec4 Ld = vec4(10.0f, 0, 0, 1);
+	vec4 Ld = vec4(0.2, 1.5, 0.5, 1);
 	vec4 Kd = vec4(0.2, 0.5, 1, 1);
 	vec3 normal = normalize(norm);
 	vec3 toLight = normalize(light_pos - pos);
 	float di = clamp( dot( toLight, normal), 0.0f, 1.0f );
 	vec4 diffuse = Ld*Kd*di;
 
-	vec4 Ls = vec4(1, 10, 1, 1);
-	vec4 Ks = vec4(0.2, 0.2, 0.2, 1);
-	float specular_power = 64;
+	vec4 Ls = vec4(20, 0.2, 0.2, 1);
+	vec4 Ks = vec4(10, 5, 0.0, 1);
+	const float specular_power = 8;
 	vec4 specular = vec4(0);
 
 	if ( di > 0 ) // spekuláris komponens csak akkor van, ha diffúz is
@@ -44,8 +45,9 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 
 void main()
 {
+	vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
 	fs_out_col = texture(texture_, vs_out_texture)
-		* (getPointLight(light1_pos, vs_out_pos, vec3(0, 1, 0))
-		  + getPointLight(light2_pos, vs_out_pos, vec3(0, 1, 0))
+		* (getPointLight(light1_pos, vs_out_pos, normalFromMap)
+		  + getPointLight(light2_pos, vs_out_pos, normalFromMap)
 		  );
 }

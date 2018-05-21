@@ -167,6 +167,18 @@ bool CMyApp::Init()
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    glGenTextures(1, &m_waterNormalMap);
+    glBindTexture(GL_TEXTURE_2D, m_waterNormalMap);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    TextureFromFileAttach("water_normal.png", GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 	// kamera
 	m_camera.SetProj(45.0f, 640.0f / 480.0f, 0.01f, 1000.0f);
 
@@ -227,6 +239,7 @@ void CMyApp::Render()
     m_program.SetUniform("mode", 1);
 
     m_program.SetTexture("texture_", 0, m_waterTexture);
+    m_program.SetTexture("normalMap", 1, m_waterNormalMap);
 
     m_program.SetUniform("eye_pos", m_camera.GetEye());
     glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
