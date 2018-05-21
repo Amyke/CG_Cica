@@ -9,7 +9,7 @@
 - [ ] A hegy színe az egyes vertexek/fregmensek esetén Y érték szerint változzon: azok a vertexek vagy fregmensek, akik vízszinten vannak, legyenek zöldek, és minél magasabban helyezkedik el egy vertex vagy fregmens, annál fehérebb! (5%)
 
 - [x] A pálya két átellenes sarkán legyen egy-egy világítótorony (henger, tetején kúppal), mindkettőnek a csúcsában legyen egy-egy pontszerű fényforrás. Mindkét fényforrásnak legyen diffúz és spekuláris fénykomponense (ezek legyenek különbözőek!), illetve legyen ambiens fényünk is. (10%)
-- [ ] Legyen meg a két torony, ne csak a két fényforrás.
+- [x] Legyen meg a két torony, ne csak a két fényforrás.
 
 - [ ] Modellezzünk csatahajókat! A csatahajók legyenek textúrázottak; a modellezésnél nem kell túlzásba esni, de ránézésre fel lehessen ismerni, hogy csatahajóról van szó! (5%)
 - [ ] Minden csatahajónak legyen lövegtornya (sokszög alapú hasábból és hengerből), a lövegtornyok külön tudnak forogni: egyrészt körbe tudjuk forgatni 360 fokkal, másrészt fel-le tudjuk állítani bizonyos dőlésszögben (vízszinteshez képest lefele 20 fokkal, felfele 60 fokkal). Több hajót is helyezzünk el a színtéren (legalább ötöt), ezek közül egyet mi fogunk irányítani, a többit a "mesterséges intelligencia". (5%)
