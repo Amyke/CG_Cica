@@ -124,6 +124,9 @@ bool CMyApp::Init()
 	m_gpuBufferPos.BufferData(waterPlaneVertices);
     m_gpuBufferIndices.BufferData(createIndices(waterPlaneDefinition));
 
+    m_light1 = glm::vec3(waterPlaneVertices.front().p.x, 3, waterPlaneVertices.front().p.z);
+    m_light2 = glm::vec3(waterPlaneVertices.back().p.x, 3.0, waterPlaneVertices.back().p.z);
+
 	// geometria VAO-ban való regisztrálása
     m_vao.Init({
         {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_gpuBufferPos},
@@ -218,11 +221,18 @@ void CMyApp::Render()
 	m_program.Use();
 
 	glm::mat4 cubeWorld = glm::scale(glm::vec3(-1,-1,-1));	// kifordítjuk, mert egyébként "kívül a belül"
-	m_program.SetUniform("MVP", m_camera.GetViewProj() * cubeWorld);
+    glm::mat4 MVP = m_camera.GetViewProj() * cubeWorld;
+	m_program.SetUniform("MVP", MVP);
     m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
     m_program.SetUniform("mode", 1);
 
     m_program.SetTexture("texture_", 0, m_waterTexture);
+
+    m_program.SetUniform("eye_pos", m_camera.GetEye());
+    glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
+    glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
+    m_program.SetUniform("light1_pos", light1);
+    m_program.SetUniform("light2_pos", light2);
 
 	glDrawElements(GL_TRIANGLES, m_gpuBufferIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 

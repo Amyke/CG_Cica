@@ -55,6 +55,9 @@ protected:
 
 	gCamera				m_camera;
 
+    glm::vec3           m_light1;
+    glm::vec3           m_light2;
+
 	// nyers OGL azonosítók
     GLuint              m_waterTexture;
 	GLuint				m_skyboxTexture;
