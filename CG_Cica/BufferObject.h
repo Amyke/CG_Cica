@@ -84,6 +84,8 @@ public:
 	template <typename T, size_t N>
 	operator std::array<T, N>() const;
 
+    GLsizeiptr sizeInBytes() const { return m_sizeInBytes; }
+
 private:
 	GLuint m_id{};
 	GLsizeiptr m_sizeInBytes{};

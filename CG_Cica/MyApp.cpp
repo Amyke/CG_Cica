@@ -8,6 +8,53 @@
 #include <tuple>
 #include <imgui/imgui.h>
 
+struct Vertex
+{
+    glm::vec3 p;
+    glm::vec3 c;
+};
+
+
+std::vector<Vertex> createPlane(std::size_t definition)
+{
+    std::vector<Vertex> vertices;
+    vertices.reserve(std::pow(definition + 1, 2));
+    glm::vec3 color{ 0.0, 0.5, 0.8 };
+    for (std::size_t z = 0; z <= definition; ++z)
+    {
+        for (std::size_t x = 0; x <= definition; ++x)
+        {
+            vertices.push_back({ glm::vec3{ x / 10.0, 1.0, z / 10.0 }, color });
+        }
+    }
+    return vertices;
+}
+
+//a csúcsok összekötése háromszögek által
+std::vector<GLushort> createIndices(std::size_t definition)
+{
+    std::vector<GLushort> indices;
+    indices.reserve(std::pow(definition + 1, 2) * 6);
+    for (std::size_t z = 0; z < definition; ++z)
+    {
+        for (std::size_t x = 1; x <= definition; ++x)
+        {
+            GLushort me = z * (definition + 1) + x;
+            GLushort nextCol = (z + 1) * (definition + 1) + x;
+
+            indices.push_back(me);
+            indices.push_back(me - 1);
+            indices.push_back(nextCol - 1);
+
+            indices.push_back(me);
+            indices.push_back(nextCol - 1);
+            indices.push_back(nextCol);
+        }
+    }
+    return indices;
+}
+
+
 CMyApp::CMyApp(void)
 {
 	m_camera.SetView(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -68,58 +115,16 @@ bool CMyApp::Init()
 	2. glBufferData segítségével áttölti a GPU-ra az argumentumban adott tároló értékeit
 
 	*/
-	m_gpuBufferPos.BufferData(
-		std::vector<glm::vec3>{
-		// hátsó lap
-		glm::vec3(-1, -1, -1),
-			glm::vec3(1, -1, -1),
-			glm::vec3(1, 1, -1),
-			glm::vec3(-1, 1, -1),
-			// elülsõ lap
-			glm::vec3(-1, -1, 1),
-			glm::vec3(1, -1, 1),
-			glm::vec3(1, 1, 1),
-			glm::vec3(-1, 1, 1),
-
-	}
-	);
-
-	// és a primitíveket alkotó csúcspontok indexei (az elõzõ tömbökbõl) - triangle list-el való kirajzolásra felkészülve
-	m_gpuBufferIndices.BufferData(
-		std::vector<int>{
-		// hátsó lap
-		0, 1, 2,
-			2, 3, 0,
-			// elülsõ lap
-			4, 6, 5,
-			6, 4, 7,
-			// bal
-			0, 3, 4,
-			4, 3, 7,
-			// jobb
-			1, 5, 2,
-			5, 6, 2,
-			// alsó
-			1, 0, 4,
-			1, 4, 5,
-			// felsõ
-			3, 2, 6,
-			3, 6, 7,
-	}
-	);
+    const std::size_t waterPlaneDefinition = 200;
+    const auto waterPlaneVertices = createPlane(waterPlaneDefinition);
+	m_gpuBufferPos.BufferData(waterPlaneVertices);
+    m_gpuBufferIndices.BufferData(createIndices(waterPlaneDefinition));
 
 	// geometria VAO-ban való regisztrálása
-	m_vao.Init(
-	{
-		// 0-ás attribútum "lényegében" glm::vec3-ak sorozata és az adatok az m_gpuBufferPos GPU pufferben vannak
-		{ CreateAttribute<		0,						// csatorna: 0
-								glm::vec3,				// CPU oldali adattípus amit a 0-ás csatorna attribútumainak meghatározására használtunk <- az eljárás a glm::vec3-ból kikövetkezteti, hogy 3 darab float-ból áll a 0-ás attribútum
-								0,						// offset: az attribútum tároló elejétõl vett offset-je, byte-ban
-								sizeof(glm::vec3)		// stride: a következõ csúcspont ezen attribútuma hány byte-ra van az aktuálistól
-							>, m_gpuBufferPos },		
-	},
-	m_gpuBufferIndices
-	);
+    m_vao.Init({
+        {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_gpuBufferPos},
+        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos}
+    }, m_gpuBufferIndices);
 
 	// skybox
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -197,32 +202,22 @@ void CMyApp::Render()
 	// töröljük a frampuffert (GL_COLOR_BUFFER_BIT) és a mélységi Z puffert (GL_DEPTH_BUFFER_BIT)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// kocka
+	// water plane
 	m_vao.Bind();
 
 	m_program.Use();
 
-	// fõ kocka
 	glm::mat4 cubeWorld = glm::scale(glm::vec3(-1,-1,-1));	// kifordítjuk, mert egyébként "kívül a belül"
-	m_program.SetUniform("MVP", m_camera.GetViewProj()*cubeWorld);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+	m_program.SetUniform("MVP", m_camera.GetViewProj() * cubeWorld);
+	glDrawElements(GL_TRIANGLES, m_gpuBufferIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
-	// kicsi kockák
-	for (int i = 0; i < 10; ++i)
-	{
-		cubeWorld = 
-			glm::rotate( SDL_GetTicks()/1000.0f + 2 * glm::pi<float>()/10*i, glm::vec3(0,1,0) )*
-			glm::translate(glm::vec3(10 + 5*sinf(SDL_GetTicks()/1000.0f),0,0))*
-			glm::rotate( (i+1)*SDL_GetTicks() / 1000.0f, glm::vec3(0, 1, 0))*
-			glm::scale(glm::vec3(-0.5, -0.5, -0.5));	// kifordítjuk, mert egyébként "kívül a belül"
-		m_program.SetUniform("MVP", m_camera.GetViewProj()*cubeWorld);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-	}
+    m_program.Unuse();
+    m_vao.Unbind();
 
-	// skybox
+	//TODO: skybox
 
 	// mentsük el az elõzõ Z-test eredményt, azaz azt a relációt, ami alapján update-eljük a pixelt.
-	GLint prevDepthFnc;
+	/*GLint prevDepthFnc;
 	glGetIntegerv(GL_DEPTH_FUNC, &prevDepthFnc);
 
 	// most kisebb-egyenlõt használjunk, mert mindent kitolunk a távoli vágósíkokra
@@ -244,10 +239,8 @@ void CMyApp::Render()
 
 	// végül állítsuk vissza
 	glDepthFunc(prevDepthFnc);
-
-	// 1. feladat: készíts egy vertex shader-fragment shader párt, ami tárolt geometria _nélkül_ kirajzol egy tetszõleges pozícióba egy XYZ tengely-hármast,
-	//			   ahol az X piros, az Y zöld a Z pedig kék!
-
+    */
+    //TODO: GUI
 	//ImGui Testwindow
 	ImGui::ShowTestWindow();
 }
