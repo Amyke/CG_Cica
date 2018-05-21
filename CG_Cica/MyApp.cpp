@@ -209,6 +209,8 @@ void CMyApp::Render()
 
 	glm::mat4 cubeWorld = glm::scale(glm::vec3(-1,-1,-1));	// kifordítjuk, mert egyébként "kívül a belül"
 	m_program.SetUniform("MVP", m_camera.GetViewProj() * cubeWorld);
+    m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
+    m_program.SetUniform("mode", 1);
 	glDrawElements(GL_TRIANGLES, m_gpuBufferIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
     m_program.Unuse();
