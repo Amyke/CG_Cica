@@ -56,6 +56,7 @@ protected:
 	gCamera				m_camera;
 
 	// nyers OGL azonosítók
+    GLuint              m_waterTexture;
 	GLuint				m_skyboxTexture;
 };
 

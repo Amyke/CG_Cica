@@ -12,6 +12,7 @@ struct Vertex
 {
     glm::vec3 p;
     glm::vec3 c;
+    glm::vec2 texCoord;
 };
 
 
@@ -22,9 +23,11 @@ std::vector<Vertex> createPlane(std::size_t definition)
     glm::vec3 color{ 0.0, 0.5, 0.8 };
     for (std::size_t z = 0; z <= definition; ++z)
     {
+        float texU = (z % 75) / 74.0;
         for (std::size_t x = 0; x <= definition; ++x)
         {
-            vertices.push_back({ glm::vec3{ x / 10.0, 1.0, z / 10.0 }, color });
+            float texV = (x % 75) / 74.0;
+            vertices.push_back({ glm::vec3{ x / 10.0, 1.0, z / 10.0 }, color, glm::vec2{ texU, texV } });
         }
     }
     return vertices;
@@ -87,7 +90,8 @@ bool CMyApp::Init()
 	// attributomok osszerendelese a VAO es shader kozt
 	m_program.BindAttribLocations({
 		{ 0, "vs_in_pos" },				// VAO 0-as csatorna menjen a vs_in_pos-ba
-		{ 1, "vs_in_col" }				// VAO 1-es csatorna menjen a vs_in_col-ba
+		{ 1, "vs_in_col" },				// VAO 1-es csatorna menjen a vs_in_col-ba
+        { 2, "vs_in_texture" }
 	});
 
 	m_program.LinkProgram();
@@ -123,7 +127,8 @@ bool CMyApp::Init()
 	// geometria VAO-ban való regisztrálása
     m_vao.Init({
         {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_gpuBufferPos},
-        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos}
+        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos},
+        {CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_gpuBufferPos}
     }, m_gpuBufferIndices);
 
 	// skybox
@@ -147,6 +152,18 @@ bool CMyApp::Init()
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
+    glGenTextures(1, &m_waterTexture);
+    glBindTexture(GL_TEXTURE_2D, m_waterTexture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    TextureFromFileAttach("water.png", GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 	// kamera
 	m_camera.SetProj(45.0f, 640.0f / 480.0f, 0.01f, 1000.0f);
 
@@ -165,19 +182,12 @@ void CMyApp::TextureFromFileAttach(const char* filename, GLuint role) const
 		return;
 	}
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	if (loaded_img->format->BytesPerPixel == 4)
-		img_mode = GL_BGRA;
-	else
-		img_mode = GL_BGR;
-#else
 	if (loaded_img->format->BytesPerPixel == 4)
 		img_mode = GL_RGBA;
 	else
 		img_mode = GL_RGB;
-#endif
 
-	glTexImage2D(role, 0, GL_RGBA, loaded_img->w, loaded_img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, loaded_img->pixels);
+	glTexImage2D(role, 0, img_mode, loaded_img->w, loaded_img->h, 0, img_mode, GL_UNSIGNED_BYTE, loaded_img->pixels);
 
 	SDL_FreeSurface(loaded_img);
 }
@@ -211,6 +221,9 @@ void CMyApp::Render()
 	m_program.SetUniform("MVP", m_camera.GetViewProj() * cubeWorld);
     m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
     m_program.SetUniform("mode", 1);
+
+    m_program.SetTexture("texture_", 0, m_waterTexture);
+
 	glDrawElements(GL_TRIANGLES, m_gpuBufferIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
     m_program.Unuse();
