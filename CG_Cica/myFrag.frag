@@ -24,15 +24,15 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 	vec4 Ka = vec4(1, 1, 1, 1);
 	vec4 ambient = La * Ka;
 
-	vec4 Ld = vec4(0.2, 1.5, 0.5, 1);
+	vec4 Ld = vec4(0.2, 0.2, 0.5, 1);
 	vec4 Kd = vec4(0.2, 0.5, 1, 1);
 	vec3 normal = normalize(norm);
 	vec3 toLight = normalize(light_pos - pos);
 	float di = clamp( dot( toLight, normal), 0.0f, 1.0f );
 	vec4 diffuse = Ld*Kd*di;
 
-	vec4 Ls = vec4(20, 0.2, 0.2, 1);
-	vec4 Ks = vec4(10, 5, 0.0, 1);
+	vec4 Ls = vec4(5, 0.2, 0.2, 1);
+	vec4 Ks = vec4(2, 1, 0.0, 1);
 	const float specular_power = 8;
 	vec4 specular = vec4(0);
 

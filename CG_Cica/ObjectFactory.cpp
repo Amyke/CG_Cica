@@ -18,13 +18,14 @@ namespace plane {
         std::vector<Vertex> vertices;
         vertices.reserve(std::pow(definition + 1, 2));
         glm::vec3 color{ 0.0, 0.5, 0.8 };
+        double definitionD = definition;
         for (std::size_t z = 0; z <= definition; ++z)
         {
-            float texU = (z % 75) / 74.0;
+            float texU = (z % 25) / 24.0;
             for (std::size_t x = 0; x <= definition; ++x)
             {
-                float texV = (x % 75) / 74.0;
-                vertices.push_back({ glm::vec3{ x / 10.0, 1.0, z / 10.0 }, color, glm::vec2{ texU, texV } });
+                float texV = (x % 25) / 24.0;
+                vertices.push_back({ glm::vec3{ -1.0 + 2.0 * x / definitionD, 1.0, -1.0 + 2.0 * z / definitionD }, color, glm::vec2{ texU, texV } });
             }
         }
         return vertices;

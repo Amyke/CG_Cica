@@ -78,7 +78,7 @@ bool CMyApp::Init()
     m_waterPlane.texture = std::make_unique<TextureObject<>>("water.png");
     m_waterPlane.normal_map = std::make_unique<TextureObject<>>("water_normal.png");
 
-    m_light1 = glm::vec3(0, 6, 0);
+    m_light1 = glm::vec3(-20, 6, -20);
     m_light2 = glm::vec3(20, 6, 20);
 
     const std::size_t lighthouseDefinition = 100;
@@ -240,8 +240,10 @@ void CMyApp::Resize(int _w, int _h)
 void CMyApp::createScene() {
     auto waterMode = std::make_shared<ShaderModeNode>(ShaderMode::Water);
 
+    auto waterScale = std::make_shared<TransformationNode>(glm::scale(glm::vec3(20.0, 1.0, 20.0)));
     auto waterplane = std::make_shared<ObjectNode>(std::move(m_waterPlane));
-    waterMode->add_child(std::move(waterplane));
+    waterScale->add_child(std::move(waterplane));
+    waterMode->add_child(std::move(waterScale));
 
     m_scene.root->add_child(std::move(waterMode));
 
@@ -249,10 +251,11 @@ void CMyApp::createScene() {
 
     auto lighthouse = std::make_shared<ObjectNode>(std::move(m_lighthouse));
 
-    auto transformLB = std::make_shared<TransformationNode>(glm::mat4(1));
+    glm::mat4 trLB = glm::translate(glm::vec3(m_light1.x, 0, m_light1.z));
+    auto transformLB = std::make_shared<TransformationNode>(trLB);
 
-    glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
-    auto transformRT = std::make_shared<TransformationNode>(tr);
+    glm::mat4 trRT = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
+    auto transformRT = std::make_shared<TransformationNode>(trRT);
 
     transformLB->add_child(lighthouse);
     transformRT->add_child(lighthouse);

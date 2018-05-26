@@ -22,8 +22,8 @@ uniform int mode;
 
 float getHeight(vec3 pos)
 {
-	float param = (pos.x + pos.z + time * 70) / 10.0;
-    float y = sin(param) * (2.0 * sin(param) + 0.5) * cos(param);
+	float param = (20 * pos.x + 20 * pos.z + time * 70) / 10.0;
+    float y = sin(param) * (2.0 * sin(param + 0.5)) * cos(param);
 	return 0.45 * y;
 }
 
