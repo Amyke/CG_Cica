@@ -155,7 +155,10 @@
     <ClInclude Include="gCamera.h" />
     <ClInclude Include="GLconversions.hpp" />
     <ClInclude Include="MyApp.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="ProgramObject.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderObject.h" />
     <ClInclude Include="T:\OGLPack\include\imgui\imconfig.h" />
     <ClInclude Include="T:\OGLPack\include\imgui\imgui.h" />
@@ -169,7 +172,9 @@
     <ClCompile Include="GLconversions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyApp.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="ProgramObject.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderObject.cpp" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />

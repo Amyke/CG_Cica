@@ -37,6 +37,8 @@ inline BufferObject<target, usage>::BufferObject(BufferObject && rhs)
 
 	m_id = rhs.m_id;
 	rhs.m_id = 0;
+    m_sizeInBytes = rhs.m_sizeInBytes;
+    rhs.m_sizeInBytes = 0;
 }
 
 template<BufferType target, BufferUsage usage>
@@ -49,6 +51,9 @@ inline BufferObject<target, usage> & BufferObject<target, usage>::operator=(Buff
 
 	m_id = rhs.m_id;
 	rhs.m_id = 0;
+    m_sizeInBytes = rhs.m_sizeInBytes;
+    rhs.m_sizeInBytes = 0;
+    return *this;
 }
 
 template<BufferType target, BufferUsage usage>

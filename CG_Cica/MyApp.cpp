@@ -1,127 +1,14 @@
 #include "MyApp.h"
 
-#include <math.h>
+#include <cmath>
 #include <vector>
-
 #include <array>
 #include <list>
 #include <tuple>
+
 #include <imgui/imgui.h>
 
-struct Vertex
-{
-    glm::vec3 p;
-    glm::vec3 c;
-    glm::vec2 texCoord;
-};
-
-
-//henger kirajzolása
-std::vector<Vertex> createCylinder(std::size_t definition) {
-    const double radius = 0.5; //kör sugár
-
-    std::vector<Vertex> vertices;
-
-    const glm::vec3 bottom(0, 0, 0);
-    vertices.push_back(Vertex{ bottom, bottom });
-
-    for (std::size_t i = 0; i < definition; ++i){
-        //körgyûrû egy pontja
-        Vertex v;
-        double u = i / static_cast<double>(definition); //vetítés 0-1 közé
-        u *= 2 * M_PI; //teljes kör rajzolása
-        // alja
-        v.p = glm::vec3(radius * std::cos(u), 0, radius * std::sin(u));
-        v.c = glm::normalize(v.p);
-        vertices.push_back(v);
-        // teteje
-        v.p += glm::vec3(0, 4, 0);
-        v.c = glm::normalize(v.p);
-        vertices.push_back(v);
-    }
-
-    const glm::vec3 top(0, 6, 0);
-    vertices.push_back(Vertex{ top, top });
-
-    return vertices;
-}
-
-
-std::vector<GLushort> createCylinderIndices(std::size_t definition) {
-    const std::size_t definition2 = definition * 2;
-    std::vector<GLushort> indices; 
-
-    GLushort origin = 0; //körlap középpont
-    GLushort top = definition2 + 1; //kúp csúcsa
-
-    for (GLushort j = origin; j < definition2; j+=2)
-    {
-        //körlapon lévõ háromszövek
-        indices.push_back((j + 3) % definition2);
-        indices.push_back(origin);
-        indices.push_back(j + 1);
-
-
-        //fölsõ csúccsal való összekötés
-        indices.push_back(j + 2);
-        indices.push_back(top);
-        indices.push_back(((j + 2) % definition2) + 2);
-
-        //körlapok összekötése
-        indices.push_back((j + 3) % definition2);
-        indices.push_back(j + 1);
-        indices.push_back(j + 2);
-
-        indices.push_back((j + 3) % definition2);
-        indices.push_back(j + 2);
-        indices.push_back(((j + 2) % definition2) + 2);
-    }
-
-    return indices;
-}
-
-
-//négyzet pontok kirajzolása
-std::vector<Vertex> createPlane(std::size_t definition)
-{
-    std::vector<Vertex> vertices;
-    vertices.reserve(std::pow(definition + 1, 2));
-    glm::vec3 color{ 0.0, 0.5, 0.8 };
-    for (std::size_t z = 0; z <= definition; ++z)
-    {
-        float texU = (z % 75) / 74.0;
-        for (std::size_t x = 0; x <= definition; ++x)
-        {
-            float texV = (x % 75) / 74.0;
-            vertices.push_back({ glm::vec3{ x / 10.0, 1.0, z / 10.0 }, color, glm::vec2{ texU, texV } });
-        }
-    }
-    return vertices;
-}
-
-//a csúcsok összekötése háromszögek által
-std::vector<GLushort> createIndices(std::size_t definition)
-{
-    std::vector<GLushort> indices;
-    indices.reserve(std::pow(definition + 1, 2) * 6);
-    for (std::size_t z = 0; z < definition; ++z)
-    {
-        for (std::size_t x = 1; x <= definition; ++x)
-        {
-            GLushort me = z * (definition + 1) + x;
-            GLushort nextCol = (z + 1) * (definition + 1) + x;
-
-            indices.push_back(me);
-            indices.push_back(me - 1);
-            indices.push_back(nextCol - 1);
-
-            indices.push_back(me);
-            indices.push_back(nextCol - 1);
-            indices.push_back(nextCol);
-        }
-    }
-    return indices;
-}
+#include "ObjectFactory.h"
 
 
 CMyApp::CMyApp(void)
@@ -186,29 +73,13 @@ bool CMyApp::Init()
 
 	*/
     const std::size_t waterPlaneDefinition = 200;
-    const auto waterPlaneVertices = createPlane(waterPlaneDefinition);
-	m_waterPlaneVertices.BufferData(waterPlaneVertices);
-    m_waterPlaneIndices.BufferData(createIndices(waterPlaneDefinition));
+    m_waterPlane = ObjectFactory::createPlane(waterPlaneDefinition);
 
-    m_light1 = glm::vec3(waterPlaneVertices.front().p.x, 6, waterPlaneVertices.front().p.z);
-    m_light2 = glm::vec3(waterPlaneVertices.back().p.x, 6.0, waterPlaneVertices.back().p.z);
-
-	// geometria VAO-ban való regisztrálása
-    m_waterPlaneVao.Init({
-        {CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_waterPlaneVertices},
-        {CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_waterPlaneVertices},
-        {CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_waterPlaneVertices}
-    }, m_waterPlaneIndices);
+    m_light1 = glm::vec3(0, 6, 0);
+    m_light2 = glm::vec3(20, 6, 20);
 
     const std::size_t lighthouseDefinition = 100;
-    m_lighthouseVertices.BufferData(createCylinder(lighthouseDefinition));
-    m_lighthouseIndices.BufferData(createCylinderIndices(lighthouseDefinition));
-
-    m_lighthouseVao.Init({
-        { CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, m_lighthouseVertices },
-        { CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, m_lighthouseVertices },
-        { CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, m_lighthouseVertices }
-    }, m_lighthouseIndices);
+    m_lighthouse = ObjectFactory::createLighthouse(lighthouseDefinition);
 
 	// skybox
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -318,22 +189,22 @@ void CMyApp::Render()
     m_program.SetUniform("light1_pos", light1);
     m_program.SetUniform("light2_pos", light2);
 
-    m_lighthouseVao.Bind();
+    m_lighthouse.vao.Bind();
     m_program.SetUniform("mode", 0);
     m_program.SetUniform("use_texture", GL_FALSE);
 
-    glDrawElements(GL_TRIANGLES, m_lighthouseIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_lighthouse.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
     glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
     m_program.SetUniform("MVP", MVP * tr);
     glm::mat4 trIT = glm::transpose(glm::inverse(tr));
     m_program.SetUniform("worldIT", trIT);
-    glDrawElements(GL_TRIANGLES, m_lighthouseIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_lighthouse.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
-    m_lighthouseVao.Unbind();
+    m_lighthouse.vao.Unbind();
 
     // water plane
-    m_waterPlaneVao.Bind();
+    m_waterPlane.vao.Bind();
 
     m_program.SetUniform("MVP", MVP);
     m_program.SetUniform("worldIT", worldIT);
@@ -345,9 +216,9 @@ void CMyApp::Render()
 
     m_program.SetUniform("use_texture", GL_TRUE);
 
-    glDrawElements(GL_TRIANGLES, m_waterPlaneIndices.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_waterPlane.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
 
-    m_waterPlaneVao.Unbind();
+    m_waterPlane.vao.Unbind();
 
     m_program.Unuse();
 

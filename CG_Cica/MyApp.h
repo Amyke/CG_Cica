@@ -22,6 +22,8 @@
 #include "VertexArrayObject.h"
 #include "TextureObject.h"
 
+#include "Object.h"
+
 class CMyApp
 {
 public:
@@ -49,13 +51,8 @@ protected:
 	ProgramObject		m_program;			// shaderek programja
 	ProgramObject		m_programSkybox;	// skybox shaderek
 
-	VertexArrayObject	m_waterPlaneVao;      // VAO objektum
-	IndexBuffer			m_waterPlaneIndices;  // indexek
-	ArrayBuffer			m_waterPlaneVertices; // pozíciók tömbje
-
-    VertexArrayObject   m_lighthouseVao;
-    IndexBuffer         m_lighthouseIndices;
-    ArrayBuffer         m_lighthouseVertices;
+    Object m_waterPlane;
+    Object m_lighthouse;
 
 	gCamera				m_camera;
 
