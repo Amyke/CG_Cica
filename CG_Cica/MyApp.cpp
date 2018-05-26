@@ -12,6 +12,7 @@
 
 
 CMyApp::CMyApp(void)
+    : m_scene(std::make_unique<Node>())
 {
 	m_camera.SetView(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }
@@ -162,55 +163,13 @@ void CMyApp::Render()
     glm::mat4 MVP = m_camera.GetViewProj();
     glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
     glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
+
     m_program.SetUniform("light1_pos", light1);
     m_program.SetUniform("light2_pos", light2);
 
     m_scene.render(m_program, m_camera.GetProj(), m_camera.GetViewMatrix());
 
     m_program.Unuse();
-
-	/*m_program.SetUniform("MVP", MVP);
-    m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
-
-    glm::mat4 worldIT = glm::transpose(glm::inverse(glm::mat4(1)));
-    m_program.SetUniform("worldIT", worldIT);
-
-    m_program.SetUniform("eye_pos", m_camera.GetEye());
-    m_program.SetUniform("light1_pos", light1);
-    m_program.SetUniform("light2_pos", light2);
-
-    m_lighthouse.vao.Bind();
-    m_program.SetUniform("mode", 0);
-    m_program.SetUniform("use_texture", GL_FALSE);
-
-    glDrawElements(GL_TRIANGLES, m_lighthouse.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
-
-    glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
-    m_program.SetUniform("MVP", MVP * tr);
-    glm::mat4 trIT = glm::transpose(glm::inverse(tr));
-    m_program.SetUniform("worldIT", trIT);
-    glDrawElements(GL_TRIANGLES, m_lighthouse.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
-
-    m_lighthouse.vao.Unbind();
-
-    // water plane
-    m_waterPlane.vao.Bind();
-
-    m_program.SetUniform("MVP", MVP);
-    m_program.SetUniform("worldIT", worldIT);
-
-    m_program.SetUniform("mode", 1);
-
-    m_program.SetTexture("texture_", 0, m_waterTexture);
-    m_program.SetTexture("normalMap", 1, m_waterNormalMap);
-
-    m_program.SetUniform("use_texture", GL_TRUE);
-
-    glDrawElements(GL_TRIANGLES, m_waterPlane.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
-
-    m_waterPlane.vao.Unbind();
-
-    m_program.Unuse();*/
 
 	//TODO: skybox
 
@@ -279,34 +238,27 @@ void CMyApp::Resize(int _w, int _h)
 }
 
 void CMyApp::createScene() {
-    m_scene.root = std::make_unique<Node>();
+    auto waterMode = std::make_shared<ShaderModeNode>(ShaderMode::Water);
 
-    auto mode1 = std::make_shared<ShaderModeNode>();
-    mode1->mode = 1;
+    auto waterplane = std::make_shared<ObjectNode>(std::move(m_waterPlane));
+    waterMode->add_child(std::move(waterplane));
 
-    auto waterplane = std::make_shared<ObjectNode>();
-    waterplane->object = std::move(m_waterPlane);
-    mode1->children.emplace_back(std::move(waterplane));
+    m_scene.root->add_child(std::move(waterMode));
 
-    m_scene.root->children.emplace_back(std::move(mode1));
+    auto normalMode = std::make_shared<ShaderModeNode>(ShaderMode::Normal);
 
-    auto mode0 = std::make_shared<ShaderModeNode>();
-    mode0->mode = 0;
+    auto lighthouse = std::make_shared<ObjectNode>(std::move(m_lighthouse));
 
-    auto lighthouse = std::make_shared<ObjectNode>();
-    lighthouse->object = std::move(m_lighthouse);
+    auto transformLB = std::make_shared<TransformationNode>(glm::mat4(1));
 
-    auto transformLB = std::make_shared<TransformationNode>();
-    transformLB->matrix = glm::mat4(1);
+    glm::mat4 tr = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
+    auto transformRT = std::make_shared<TransformationNode>(tr);
 
-    auto transformRT = std::make_shared<TransformationNode>();
-    transformRT->matrix = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
+    transformLB->add_child(lighthouse);
+    transformRT->add_child(lighthouse);
 
-    transformLB->children.emplace_back(lighthouse);
-    transformRT->children.emplace_back(lighthouse);
+    normalMode->add_child(std::move(transformLB));
+    normalMode->add_child(std::move(transformRT));
 
-    mode0->children.emplace_back(std::move(transformLB));
-    mode0->children.emplace_back(std::move(transformRT));
-
-    m_scene.root->children.emplace_back(std::move(mode0));
+    m_scene.root->add_child(std::move(normalMode));
 }

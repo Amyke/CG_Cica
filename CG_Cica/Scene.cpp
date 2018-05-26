@@ -27,6 +27,6 @@ void ObjectNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
 }
 
 void ShaderModeNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
-    shader.SetUniform("mode", mode);
+    shader.SetUniform("mode", static_cast<int>(mode));
     Node::render(shader, vp, m);
 }
