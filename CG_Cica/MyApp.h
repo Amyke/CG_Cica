@@ -23,6 +23,7 @@
 #include "TextureObject.h"
 
 #include "Object.h"
+#include "Scene.h"
 
 class CMyApp
 {
@@ -47,9 +48,13 @@ protected:
 	// segédeljárások
 	void TextureFromFileAttach(const char* filename, GLuint role) const;
 
+    void createScene();
+
 	// shaderekhez szükséges változók
 	ProgramObject		m_program;			// shaderek programja
 	ProgramObject		m_programSkybox;	// skybox shaderek
+
+    Scene m_scene;
 
     Object m_waterPlane;
     Object m_lighthouse;

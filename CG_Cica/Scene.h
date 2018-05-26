@@ -5,12 +5,16 @@
 
 #include <glm/glm.hpp>
 
+#include "Object.h"
+
+class ProgramObject;
+
 struct Node {
     virtual ~Node() = default;
 
-    virtual void render(glm::mat4 mvp) {
+    virtual void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
         for (auto& child : children) {
-            child->render(mvp);
+            child->render(shader, vp, m);
         }
     }
 
@@ -18,19 +22,27 @@ struct Node {
 };
 
 struct Scene {
-    void render(glm::mat4 projection, glm::mat4 view) {
-        root->render(projection * view * glm::mat4(1));
+    void render(ProgramObject& shader, glm::mat4 projection, glm::mat4 view) {
+        root->render(shader, projection * view, glm::mat4(1));
     }
 
     std::unique_ptr<Node> root;
 };
 
-struct TranslationNode : Node {
-    void render(glm::mat4 mvp) override;
+struct TransformationNode : Node {
+    void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) override;
 
     glm::mat4 matrix;
 };
 
 struct ObjectNode : Node {
-    void render(glm::mat4 mvp) override;
+    void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) override;
+
+    Object object;
+};
+
+struct ShaderModeNode : Node {
+    void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) override;
+
+    int mode;
 };

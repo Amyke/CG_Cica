@@ -74,6 +74,8 @@ bool CMyApp::Init()
 	*/
     const std::size_t waterPlaneDefinition = 200;
     m_waterPlane = ObjectFactory::createPlane(waterPlaneDefinition);
+    m_waterPlane.texture = std::make_unique<TextureObject<>>("water.png");
+    m_waterPlane.normal_map = std::make_unique<TextureObject<>>("water_normal.png");
 
     m_light1 = glm::vec3(0, 6, 0);
     m_light2 = glm::vec3(20, 6, 20);
@@ -102,32 +104,10 @@ bool CMyApp::Init()
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-    glGenTextures(1, &m_waterTexture);
-    glBindTexture(GL_TEXTURE_2D, m_waterTexture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    TextureFromFileAttach("water.png", GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glGenTextures(1, &m_waterNormalMap);
-    glBindTexture(GL_TEXTURE_2D, m_waterNormalMap);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    TextureFromFileAttach("water_normal.png", GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
 	// kamera
 	m_camera.SetProj(45.0f, 640.0f / 480.0f, 0.01f, 1000.0f);
+
+    createScene();
 
 	return true;
 }
@@ -176,16 +156,26 @@ void CMyApp::Render()
 
 	m_program.Use();
 
+    m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
+    m_program.SetUniform("eye_pos", m_camera.GetEye());
+
     glm::mat4 MVP = m_camera.GetViewProj();
-	m_program.SetUniform("MVP", MVP);
+    glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
+    glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
+    m_program.SetUniform("light1_pos", light1);
+    m_program.SetUniform("light2_pos", light2);
+
+    m_scene.render(m_program, m_camera.GetProj(), m_camera.GetViewMatrix());
+
+    m_program.Unuse();
+
+	/*m_program.SetUniform("MVP", MVP);
     m_program.SetUniform("time", SDL_GetTicks() / 10'000.0f);
 
     glm::mat4 worldIT = glm::transpose(glm::inverse(glm::mat4(1)));
     m_program.SetUniform("worldIT", worldIT);
 
     m_program.SetUniform("eye_pos", m_camera.GetEye());
-    glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
-    glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
     m_program.SetUniform("light1_pos", light1);
     m_program.SetUniform("light2_pos", light2);
 
@@ -220,7 +210,7 @@ void CMyApp::Render()
 
     m_waterPlane.vao.Unbind();
 
-    m_program.Unuse();
+    m_program.Unuse();*/
 
 	//TODO: skybox
 
@@ -286,4 +276,37 @@ void CMyApp::Resize(int _w, int _h)
 	glViewport(0, 0, _w, _h );
 
 	m_camera.Resize(_w, _h);
+}
+
+void CMyApp::createScene() {
+    m_scene.root = std::make_unique<Node>();
+
+    auto mode1 = std::make_shared<ShaderModeNode>();
+    mode1->mode = 1;
+
+    auto waterplane = std::make_shared<ObjectNode>();
+    waterplane->object = std::move(m_waterPlane);
+    mode1->children.emplace_back(std::move(waterplane));
+
+    m_scene.root->children.emplace_back(std::move(mode1));
+
+    auto mode0 = std::make_shared<ShaderModeNode>();
+    mode0->mode = 0;
+
+    auto lighthouse = std::make_shared<ObjectNode>();
+    lighthouse->object = std::move(m_lighthouse);
+
+    auto transformLB = std::make_shared<TransformationNode>();
+    transformLB->matrix = glm::mat4(1);
+
+    auto transformRT = std::make_shared<TransformationNode>();
+    transformRT->matrix = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
+
+    transformLB->children.emplace_back(lighthouse);
+    transformRT->children.emplace_back(lighthouse);
+
+    mode0->children.emplace_back(std::move(transformLB));
+    mode0->children.emplace_back(std::move(transformRT));
+
+    m_scene.root->children.emplace_back(std::move(mode0));
 }

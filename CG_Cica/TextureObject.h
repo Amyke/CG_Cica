@@ -19,7 +19,7 @@ enum class TextureType
 	Texture2DMultisampleArray	= GL_TEXTURE_2D_MULTISAMPLE_ARRAY
 };
 
-template <TextureType type = TextureType::Texture2D>
+template <TextureType type = TextureType::Texture2D, bool Repeat = false>
 class TextureObject final
 {
 public:

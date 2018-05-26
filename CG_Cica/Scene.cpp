@@ -1,10 +1,32 @@
 #include "Scene.h"
 
-void TranslationNode::render(glm::mat4 mvp) {
-    glm::mat4 modified = mvp * matrix;
-    Node::render(modified);
+#include "ProgramObject.h"
+
+void TransformationNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
+    glm::mat4 modified = m * matrix;
+    Node::render(shader, vp, modified);
 }
 
-void ObjectNode::render(glm::mat4 mvp) {
+void ObjectNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
+    object.vao.Bind();
 
+    shader.SetUniform("MVP", vp * m);
+    shader.SetUniform("worldIT", glm::transpose(glm::inverse(m)));
+
+    if (object.texture != nullptr) {
+        shader.SetUniform("use_texture", GL_TRUE);
+        shader.SetTexture("texture_", 0, *object.texture);
+        shader.SetTexture("normalMap", 1, *object.normal_map);
+    } else {
+        shader.SetUniform("use_texture", GL_FALSE);
+    }
+
+    glDrawElements(GL_TRIANGLES, object.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);
+
+    object.vao.Unbind();
+}
+
+void ShaderModeNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
+    shader.SetUniform("mode", mode);
+    Node::render(shader, vp, m);
 }
