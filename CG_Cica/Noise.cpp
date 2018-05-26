@@ -58,7 +58,7 @@ Perlin::Perlin()
     : p(generate_p()) {
 }
 
-double Perlin::noise(double x, double y, double z) {
+double Perlin::noise(double x, double y, double z) const {
     double xfloor = std::floor(x);
     double yfloor = std::floor(y);
     double zfloor = std::floor(z);
@@ -102,4 +102,18 @@ double Perlin::noise(double x, double y, double z) {
     double L_2 = lerp(v, L_21, L_22);
 
     return lerp(w, L_1, L_2);
+}
+
+double Perlin::octave_noise(std::size_t octaves, double x, double y, double z) const {
+    double result = 0.0;
+    double amplitude = 1.0;
+
+    for (std::size_t i = 0; i < octaves; ++i) {
+        result += noise(x, y, z) * amplitude;
+        x *= 2;
+        y *= 2;
+        z *= 2;
+        amplitude *= 0.5;
+    }
+    return result;
 }
