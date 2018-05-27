@@ -26,6 +26,8 @@
 #include "Object.h"
 #include "Scene.h"
 
+class PlayerCat;
+
 class CMyApp
 {
 public:
@@ -61,6 +63,7 @@ protected:
     Object m_lighthouse;
 
 	gCamera				m_camera;
+    bool                m_freeCamera = false;
 
     glm::vec3           m_light1;
     glm::vec3           m_light2;
@@ -70,6 +73,7 @@ protected:
     GLuint              m_waterNormalMap;
 	GLuint				m_skyboxTexture;
 
+    PlayerCat*          m_player;
     std::vector<std::unique_ptr<Entity>> entities;
 };
 

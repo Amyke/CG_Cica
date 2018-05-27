@@ -114,17 +114,17 @@ bool CMyApp::Init()
         { 1, 0, 0 },
         { 1, 0, 1 },
         { 1, 0, -1 },
-        { 0, 0, 1 },
-        { -1, 0, 0 },
-        { -1, 0, 1 },
-        { -1, 0, -1 },
-        { 0, 0, -1 }
+        { 0, 0, 1 }
     };
     for (auto dir : directions) {
         auto cat = std::make_unique<Cat>();
         cat->change_direction(dir);
         entities.emplace_back(std::move(cat));
     }
+    auto playerCat = std::make_unique<PlayerCat>();
+    m_player = playerCat.get();
+    entities.emplace_back(std::move(playerCat));
+
     createScene();
 
 	return true;
@@ -224,17 +224,29 @@ void CMyApp::Render()
 
 void CMyApp::KeyboardDown(SDL_KeyboardEvent& key)
 {
-	m_camera.KeyboardDown(key);
+    if (m_freeCamera) {
+        m_camera.KeyboardDown(key);
+    } else {
+        m_player->KeyboardDown(key);
+    }
 }
 
 void CMyApp::KeyboardUp(SDL_KeyboardEvent& key)
 {
-	m_camera.KeyboardUp(key);
+    if (m_freeCamera) {
+        m_camera.KeyboardUp(key);
+    } else {
+        m_player->KeyboardUp(key);
+    }
 }
 
 void CMyApp::MouseMove(SDL_MouseMotionEvent& mouse)
 {
-	m_camera.MouseMove(mouse);
+    if (m_freeCamera) {
+        m_camera.MouseMove(mouse);
+    } else {
+        m_player->MouseMove(mouse);
+    }
 }
 
 void CMyApp::MouseDown(SDL_MouseButtonEvent& mouse)
