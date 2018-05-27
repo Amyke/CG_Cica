@@ -19,12 +19,6 @@ Cat::Cat()
 
 Cat::~Cat() = default;
 
-void Cat::update(float dt) {
-    speed = std::min(std::max(speed + 0.01f, -1.0f), 1.0f);
-    position += direction * speed * dt;
-    position = clamp_to_world(position);
-}
-
 glm::mat4 Cat::getTransform() const {
     glm::vec3 b = glm::vec3(1, 0, 0);
     glm::vec3 v = glm::cross(b, direction) + glm::vec3(0, 0.001, 0);
@@ -38,7 +32,7 @@ void Cat::change_direction(glm::vec3 newDirection) {
 }
 
 void Cat::rotate_direction(float angle) {
-    float new_speed = std::abs(speed) - 0.05f;
+    float new_speed = std::abs(speed) - 0.0025f;
     if (new_speed > 0.01f) {
         speed = std::copysign(new_speed, speed);
     }
@@ -47,6 +41,32 @@ void Cat::rotate_direction(float angle) {
 
 const Turret& Cat::getTurret() const {
     return *turret;
+}
+
+std::random_device AICat::rd;
+std::mt19937 AICat::random_gen{ AICat::rd() };
+
+void AICat::update(float dt) {
+    time_until_turn -= dt;
+    if (time_until_turn <= 0.0f) {
+        std::uniform_real_distribution<float> angle_dist{ 0.0025f, 0.0075f };
+        std::discrete_distribution<> sign_dist({ 1, 1 });
+        std::uniform_real_distribution<float> time_dist{ 1.0f, 3.0f };
+
+        time_until_turn = 5.0f;
+        float sign = sign_dist(random_gen) == 0 ? -1.0f : 1.0f;
+        turning_time = time_dist(random_gen);
+        turn_angle = angle_dist(random_gen) * sign;
+    }
+
+    if (turning_time >= 0.0f) {
+        turning_time -= dt;
+        rotate_direction(turn_angle);
+    }
+
+    speed = std::min(std::max(speed + 0.01f, -1.0f), 1.0f);
+    position += direction * speed * dt;
+    position = clamp_to_world(position);
 }
 
 void PlayerCat::update(float dt) {

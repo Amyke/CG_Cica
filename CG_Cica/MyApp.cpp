@@ -111,7 +111,7 @@ bool CMyApp::Init()
         { 0, 0, 1 }
     };
     for (auto dir : directions) {
-        auto cat = std::make_unique<Cat>();
+        auto cat = std::make_unique<AICat>();
         cat->change_direction(dir);
         entities.emplace_back(std::move(cat));
     }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <random>
 
 #include <glm/glm.hpp>
 
@@ -16,7 +17,6 @@ public:
     Cat();
     ~Cat();
 
-    void update(float dt) override;
     glm::mat4 getTransform() const override;
 
     void change_direction(glm::vec3 newDirection);
@@ -29,6 +29,19 @@ protected:
     float speed = 0.0f;
 
     std::unique_ptr<Turret> turret;
+};
+
+class AICat : public Cat {
+public:
+    void update(float dt) override;
+
+private:
+    float time_until_turn = 5.0f;
+    float turning_time = 0.0f;
+    float turn_angle;
+
+    static std::random_device rd;
+    static std::mt19937 random_gen;
 };
 
 class PlayerCat : public Cat {

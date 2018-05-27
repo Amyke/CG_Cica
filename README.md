@@ -24,7 +24,7 @@
 
 - [x] A kameránk végig követi a hajónkat (felette lebeg), de szabadon tudjuk körbeforgatni. Szóköz billentyű hatására a kamera "elengedi" a hajónkat, ekkor a pályát szabadon bejárhatjuk, de a szóköz újbóli megnyomására visszaugrunk a hajónkhoz. (5%)
 
-- [ ] Az ellenséges hajók maguktól mozogjanak és támadjanak. A mozgásuk legyen véletlen, de csak 5 mp-enként változzon (például elfordul valamekkora szöggel, majd halad 5 mp-ig, majd megint elfordul, megint halad, és így tovább). (5%)
+- [x] Az ellenséges hajók maguktól mozogjanak és támadjanak. A mozgásuk legyen véletlen, de csak 5 mp-enként változzon (például elfordul valamekkora szöggel, majd halad 5 mp-ig, majd megint elfordul, megint halad, és így tovább). (5%)
 - [x] Nem úsznak ki a pálya széléről! (5%) 
 - [ ]  Ha közel vannak hozzánk, akkor felénk fordítják a lövegtornyukat, és tüzelnek, ezt megpróbálják a lehető legpontosabban véghez vinni: ehhez számítsuk ki a lövegtorony állását! A víz hullámzását ne vegyük figyelembe, így persze időnként mellélőnek. (15%)
 - [ ] Az ellenséges hajók csak bizonyos időközönként tüzelnek újra. (Ha így is gyorsan kilőnének minket, állítsuk nyugodtan magasabbra a mi hajónk kezdeti életerejét.)
