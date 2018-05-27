@@ -1,6 +1,10 @@
 #include "Scene.h"
 
+#include <glm/gtx/transform2.hpp>
+
 #include "ProgramObject.h"
+
+#include "Entity.h"
 
 void TransformationNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
     glm::mat4 modified = m * matrix;
@@ -34,4 +38,9 @@ void ObjectNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
 void ShaderModeNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
     shader.SetUniform("mode", static_cast<int>(mode));
     Node::render(shader, vp, m);
+}
+
+void EntityNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
+    glm::mat4 modified = m * entity.getTransform();
+    Node::render(shader, vp, modified);
 }

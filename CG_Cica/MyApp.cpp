@@ -8,6 +8,7 @@
 
 #include <imgui/imgui.h>
 
+#include "Cat.h"
 #include "ObjectFactory.h"
 #include "ObjParser_OGL3.h"
 
@@ -109,6 +110,21 @@ bool CMyApp::Init()
 	// kamera
 	m_camera.SetProj(45.0f, 640.0f / 480.0f, 0.01f, 1000.0f);
 
+    std::vector<glm::vec3> directions{
+        { 1, 0, 0 },
+        { 1, 0, 1 },
+        { 1, 0, -1 },
+        { 0, 0, 1 },
+        { -1, 0, 0 },
+        { -1, 0, 1 },
+        { -1, 0, -1 },
+        { 0, 0, -1 }
+    };
+    for (auto dir : directions) {
+        auto cat = std::make_unique<Cat>();
+        cat->change_direction(dir);
+        entities.emplace_back(std::move(cat));
+    }
     createScene();
 
 	return true;
@@ -147,6 +163,9 @@ void CMyApp::Update()
 	float delta_time = (SDL_GetTicks() - last_time) / 1000.0f;
 
 	m_camera.Update(delta_time);
+    for (auto& entity : entities) {
+        entity->update(delta_time);
+    }
 
 	last_time = SDL_GetTicks();
 }
@@ -285,7 +304,12 @@ void CMyApp::createScene() {
         glm::scale(glm::vec3(3, 3, 3))
     );
     cicaPosition->add_child(cica);
-    normalMode->add_child(cicaPosition);
+
+    for (const auto& entity : entities) {
+        auto cicaEnt = std::make_shared<EntityNode>(*entity);
+        cicaEnt->add_child(cicaPosition);
+        normalMode->add_child(cicaEnt);
+    }
 
     m_scene.root->add_child(std::move(normalMode));
 }

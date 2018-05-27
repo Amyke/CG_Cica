@@ -2,6 +2,7 @@
 
 // C++ includes
 #include <memory>
+#include <vector>
 
 // GLEW
 #include <GL/glew.h>
@@ -68,5 +69,7 @@ protected:
     GLuint              m_waterTexture;
     GLuint              m_waterNormalMap;
 	GLuint				m_skyboxTexture;
+
+    std::vector<std::unique_ptr<Entity>> entities;
 };
 

@@ -72,3 +72,14 @@ struct ShaderModeNode : Node {
 
     ShaderMode mode;
 };
+
+struct Entity;
+
+struct EntityNode : Node {
+    EntityNode(const Entity& entity_) : entity(entity_) {
+    }
+
+    void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) override;
+
+    const Entity& entity;
+};

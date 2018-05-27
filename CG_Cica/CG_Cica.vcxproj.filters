@@ -75,11 +75,14 @@
     <ClInclude Include="Noise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh_OGL3.h">
-      <Filter>Hantos</Filter>
-    </ClInclude>
     <ClInclude Include="ObjParser_OGL3.h">
       <Filter>Hantos</Filter>
+    </ClInclude>
+    <ClInclude Include="Cat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -123,11 +126,11 @@
     <ClCompile Include="Noise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh_OGL3.cpp">
-      <Filter>Hantos</Filter>
-    </ClCompile>
     <ClCompile Include="ObjParser_OGL3.cpp">
       <Filter>Hantos</Filter>
+    </ClCompile>
+    <ClCompile Include="Cat.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

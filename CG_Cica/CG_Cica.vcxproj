@@ -152,9 +152,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BufferObject.h" />
+    <ClInclude Include="Cat.h" />
+    <ClInclude Include="Entity.h" />
     <ClInclude Include="gCamera.h" />
     <ClInclude Include="GLconversions.hpp" />
-    <ClInclude Include="Mesh_OGL3.h" />
     <ClInclude Include="MyApp.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="Object.h" />
@@ -171,10 +172,10 @@
     <ClInclude Include="VertexArrayObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Cat.cpp" />
     <ClCompile Include="gCamera.cpp" />
     <ClCompile Include="GLconversions.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh_OGL3.cpp" />
     <ClCompile Include="MyApp.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
