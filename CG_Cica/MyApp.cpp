@@ -321,9 +321,27 @@ void CMyApp::createScene() {
     );
     cicaPosition->add_child(cica);
 
+    auto turretBodyObj = ObjectFactory::createTurretBody(6);
+    auto turretBarrelObj = ObjectFactory::createTurretBarrel(50);
+
+    auto turretBarrelRot = std::make_shared<TransformationNode>(
+        glm::translate(glm::vec3(0, 3.5, 0)) *
+        glm::scale(glm::vec3(0.75, 0.75, 0.75)) *
+        glm::rotate<float>(-0.5 * M_PI, glm::vec3(0, 0, 1))
+    );
+    turretBarrelRot->add_child(std::make_shared<ObjectNode>(std::move(turretBarrelObj)));
+
+    auto turretNode = std::make_shared<TransformationNode>(
+        glm::scale(glm::vec3(0.20, 0.20, 0.20)) *
+        glm::translate(glm::vec3(0, 1, 0))
+    );
+    turretNode->add_child(turretBarrelRot);
+    turretNode->add_child(std::make_shared<ObjectNode>(std::move(turretBodyObj)));
+
     for (const auto& entity : entities) {
         auto cicaEnt = std::make_shared<EntityNode>(*entity);
         cicaEnt->add_child(cicaPosition);
+        cicaEnt->add_child(turretNode);
         normalMode->add_child(cicaEnt);
     }
 

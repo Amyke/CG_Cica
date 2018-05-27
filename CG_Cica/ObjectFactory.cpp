@@ -138,7 +138,7 @@ namespace ObjectFactory {
     }
 }
 
-namespace lighthouse {
+namespace cylinder {
     //henger kirajzolása
     std::vector<Vertex> vertices(std::size_t definition) {
         const double radius = 0.5; //kör sugár
@@ -163,7 +163,7 @@ namespace lighthouse {
             vertices.push_back(v);
         }
 
-        const glm::vec3 top(0, 6, 0);
+        const glm::vec3 top(0, 4, 0);
         vertices.push_back(Vertex{ top, top });
 
         return vertices;
@@ -208,8 +208,47 @@ namespace ObjectFactory {
     Object createLighthouse(std::size_t definition) {
         Object ret;
 
-        auto vertices = lighthouse::vertices(definition);
-        auto indices = lighthouse::indices(definition);
+        auto vertices = cylinder::vertices(definition);
+        vertices.back().p.y += 2;
+        auto indices = cylinder::indices(definition);
+
+        ArrayBuffer vbo;
+        ret.vbo.BufferData(vertices);
+        ret.ibo.BufferData(indices);
+
+        ret.vao.Init({
+            { CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, ret.vbo }
+        }, ret.ibo);
+
+        return ret;
+    }
+
+    Object createTurretBody(std::size_t definition) {
+        Object ret;
+
+        auto vertices = cylinder::vertices(definition);
+        auto indices = cylinder::indices(definition);
+
+        ArrayBuffer vbo;
+        ret.vbo.BufferData(vertices);
+        ret.ibo.BufferData(indices);
+
+        ret.vao.Init({
+            { CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, ret.vbo }
+        }, ret.ibo);
+
+        return ret;
+    }
+
+    Object createTurretBarrel(std::size_t definition) {
+        Object ret;
+
+        auto vertices = cylinder::vertices(definition);
+        auto indices = cylinder::indices(definition);
 
         ArrayBuffer vbo;
         ret.vbo.BufferData(vertices);
