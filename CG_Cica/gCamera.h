@@ -21,6 +21,7 @@ public:
 	void SetView(glm::vec3 _eye, glm::vec3 _at, glm::vec3 _up);
 	void SetProj(float _angle, float _aspect, float _zn, float _zf); 
 	void LookAt(glm::vec3 _at);
+    void Follow(glm::vec3 p);
 
 	void SetSpeed(float _val);
 	glm::vec3 GetEye()

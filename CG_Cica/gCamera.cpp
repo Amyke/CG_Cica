@@ -148,3 +148,10 @@ void gCamera::LookAt(glm::vec3 _at)
 	SetView(m_eye, _at, m_up);
 }
 
+void gCamera::Follow(glm::vec3 p) {
+    auto direction = m_eye - m_at;
+    m_at = p;
+    m_eye = p + direction;
+    SetView(m_eye, m_at, m_up);
+}
+

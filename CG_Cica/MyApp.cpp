@@ -162,10 +162,13 @@ void CMyApp::Update()
 	static Uint32 last_time = SDL_GetTicks();
 	float delta_time = (SDL_GetTicks() - last_time) / 1000.0f;
 
-	m_camera.Update(delta_time);
     for (auto& entity : entities) {
         entity->update(delta_time);
     }
+    if (!m_freeCamera) {
+        m_camera.Follow(m_player->position);
+    }
+	m_camera.Update(delta_time);
 
 	last_time = SDL_GetTicks();
 }
@@ -247,11 +250,7 @@ void CMyApp::KeyboardUp(SDL_KeyboardEvent& key)
 
 void CMyApp::MouseMove(SDL_MouseMotionEvent& mouse)
 {
-    if (m_freeCamera) {
-        m_camera.MouseMove(mouse);
-    } else {
-        m_player->MouseMove(mouse);
-    }
+    m_camera.MouseMove(mouse);
 }
 
 void CMyApp::MouseDown(SDL_MouseButtonEvent& mouse)
