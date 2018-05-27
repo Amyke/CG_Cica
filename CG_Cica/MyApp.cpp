@@ -233,6 +233,11 @@ void CMyApp::KeyboardDown(SDL_KeyboardEvent& key)
 
 void CMyApp::KeyboardUp(SDL_KeyboardEvent& key)
 {
+    if (key.keysym.sym == SDLK_SPACE) {
+        m_freeCamera = !m_freeCamera;
+        return;
+    }
+
     if (m_freeCamera) {
         m_camera.KeyboardUp(key);
     } else {
