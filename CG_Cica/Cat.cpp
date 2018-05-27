@@ -7,9 +7,17 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
+#include "Turret.h"
+
 glm::vec3 clamp_to_world(glm::vec3 p) {
     return glm::clamp(p, glm::vec3(-18.75, 0, -18.75), glm::vec3(18.75, 0, 18.75));
 }
+
+Cat::Cat()
+    : turret(std::make_unique<Turret>()) {
+}
+
+Cat::~Cat() = default;
 
 void Cat::update(float dt) {
     speed = std::min(std::max(speed + 0.01f, -1.0f), 1.0f);
@@ -37,6 +45,10 @@ void Cat::rotate_direction(float angle) {
     direction = glm::normalize(glm::rotateY(direction, angle));
 }
 
+const Turret& Cat::getTurret() const {
+    return *turret;
+}
+
 void PlayerCat::update(float dt) {
     position += direction * speed * dt;
     position = clamp_to_world(position);
@@ -55,6 +67,18 @@ void PlayerCat::KeyboardDown(SDL_KeyboardEvent& key) {
         break;
     case SDLK_d:
         rotate_direction(-0.05f);
+        break;
+    case SDLK_q:
+        turret->rotate(0.05f);
+        break;
+    case SDLK_e:
+        turret->rotate(-0.05f);
+        break;
+    case SDLK_2:
+        turret->tilt(-0.05);
+        break;
+    case SDLK_3:
+        turret->tilt(0.05);
         break;
     }
     speed = std::min(std::max(speed, -1.0f), 1.0f);

@@ -11,6 +11,7 @@
 #include "Cat.h"
 #include "ObjectFactory.h"
 #include "ObjParser_OGL3.h"
+#include "Turret.h"
 
 
 CMyApp::CMyApp(void)
@@ -360,10 +361,17 @@ void CMyApp::createScene() {
     auto turret = createTurret();
 
     for (const auto& entity : entities) {
-        auto cicaEnt = std::make_shared<EntityNode>(*entity);
-        cicaEnt->add_child(cica);
-        cicaEnt->add_child(turret);
-        normalMode->add_child(cicaEnt);
+        auto cicaEnt = dynamic_cast<const Cat*>(entity.get());
+        if (cicaEnt == nullptr) {
+            continue;
+        }
+        auto cicaNode = std::make_shared<EntityNode>(*cicaEnt);
+        cicaNode->add_child(cica);
+
+        auto turretEnt = std::make_shared<EntityNode>(cicaEnt->getTurret());
+        turretEnt->add_child(turret);
+        cicaNode->add_child(turretEnt);
+        normalMode->add_child(cicaNode);
     }
 
     m_scene.root->add_child(std::move(normalMode));
