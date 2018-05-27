@@ -7,10 +7,14 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
+glm::vec3 clamp_to_world(glm::vec3 p) {
+    return glm::clamp(p, glm::vec3(-18.75, 0, -18.75), glm::vec3(18.75, 0, 18.75));
+}
+
 void Cat::update(float dt) {
     speed = std::min(std::max(speed + 0.01f, -1.0f), 1.0f);
     position += direction * speed * dt;
-    position = glm::clamp(position, glm::vec3(-20, 0, -20), glm::vec3(20, 0, 20));
+    position = clamp_to_world(position);
 }
 
 glm::mat4 Cat::getTransform() const {
@@ -26,12 +30,16 @@ void Cat::change_direction(glm::vec3 newDirection) {
 }
 
 void Cat::rotate_direction(float angle) {
+    float new_speed = std::abs(speed) - 0.05f;
+    if (new_speed > 0.01f) {
+        speed = std::copysign(new_speed, speed);
+    }
     direction = glm::normalize(glm::rotateY(direction, angle));
 }
 
 void PlayerCat::update(float dt) {
     position += direction * speed * dt;
-    position = glm::clamp(position, glm::vec3(-20, 0, -20), glm::vec3(20, 0, 20));
+    position = clamp_to_world(position);
 }
 
 void PlayerCat::KeyboardDown(SDL_KeyboardEvent& key) {
