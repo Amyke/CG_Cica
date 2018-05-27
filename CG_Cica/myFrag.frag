@@ -49,17 +49,17 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 
 void main()
 {
+	vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
+	vec4 norm = worldIT * vec4(normalFromMap, 0);
+	vec4 lights =
+		getPointLight(light1_pos, vs_out_pos, norm.xyz) +
+		getPointLight(light2_pos, vs_out_pos, norm.xyz);
 	if (use_texture)
 	{
-		vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
-		vec4 norm = worldIT * vec4(normalFromMap, 0);
-		vec4 lights =
-			getPointLight(light1_pos, vs_out_pos, norm.xyz) +
-			getPointLight(light2_pos, vs_out_pos, norm.xyz);
 		fs_out_col = texture(texture_, vs_out_texture) * lights;
 	}
 	else
 	{
-		fs_out_col = vec4(vs_out_col, 1);
+		fs_out_col = vs_out_col * lights;
 	}
 }

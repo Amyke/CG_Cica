@@ -16,9 +16,11 @@ void ObjectNode::render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
     if (object.texture != nullptr) {
         shader.SetUniform("use_texture", GL_TRUE);
         shader.SetTexture("texture_", 0, *object.texture);
-        shader.SetTexture("normalMap", 1, *object.normal_map);
     } else {
         shader.SetUniform("use_texture", GL_FALSE);
+    }
+    if (object.normal_map != nullptr) {
+        shader.SetTexture("normalMap", 1, *object.normal_map);
     }
 
     glDrawElements(GL_TRIANGLES, object.ibo.sizeInBytes() / sizeof GLushort, GL_UNSIGNED_SHORT, nullptr);

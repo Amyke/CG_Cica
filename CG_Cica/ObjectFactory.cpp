@@ -125,9 +125,14 @@ namespace ObjectFactory {
         auto vertices = mountain::vertices(definition);
         glm::vec3 white(1, 1, 1);
         glm::vec3 green(52.0 / 256, 150.0 / 256, 62.0 / 256);
+        const Perlin perlin;
         for (auto& vert : vertices) {
             if (std::abs(vert.p.x * 2) < 1.0 && std::abs(vert.p.z * 2) < 1.0) {
                 vert.p.y = -1;
+            } else {
+                auto x = vert.p.x * .5 + .5;
+                auto z = vert.p.z * .5 + .5;
+                vert.p.y += 1.5 * perlin.octave_noise(8, x * 0.2, z * 0.2);
             }
             vert.c = glm::lerp(green, white, vert.p.y - 1);
         }

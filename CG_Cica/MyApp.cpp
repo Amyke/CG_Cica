@@ -253,6 +253,7 @@ void CMyApp::createScene() {
     auto normalMode = std::make_shared<ShaderModeNode>(ShaderMode::Normal);
 
     Object mountainPlaneObject = ObjectFactory::createMountain(200);
+    mountainPlaneObject.normal_map = std::make_unique<TextureObject<>>("mountain_normal.bmp");
     auto mountainPlane = std::make_shared<ObjectNode>(std::move(mountainPlaneObject));
 
     auto mountainScale = std::make_shared<TransformationNode>(
