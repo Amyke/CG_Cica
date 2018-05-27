@@ -9,12 +9,6 @@
 
 #include "Noise.h"
 
-struct Vertex {
-    glm::vec3 p;
-    glm::vec3 c;
-    glm::vec2 texCoord;
-};
-
 namespace plane {
     //négyzet pontok kirajzolása
     std::vector<Vertex> vertices(std::size_t definition) {
@@ -24,10 +18,10 @@ namespace plane {
         double definitionD = definition;
         for (std::size_t z = 0; z <= definition; ++z)
         {
-            float texU = (z % 25) / 24.0;
+            float texU = (z % 10) / 9.0;
             for (std::size_t x = 0; x <= definition; ++x)
             {
-                float texV = (x % 25) / 24.0;
+                float texV = (x % 10) / 9.0;
                 vertices.push_back({ glm::vec3{ -1.0 + 2.0 * x / definitionD, 0.0, -1.0 + 2.0 * z / definitionD }, color, glm::vec2{ texU, texV } });
             }
         }

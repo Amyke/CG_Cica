@@ -9,6 +9,13 @@
 #include "VertexArrayObject.h"
 #include "TextureObject.h"
 
+struct Vertex {
+    glm::vec3 p;
+    glm::vec3 c;
+    glm::vec2 texCoord;
+    glm::vec3 normal;
+};
+
 struct Object {
     VertexArrayObject	vao;      // VAO objektum
     IndexBuffer			ibo;  // indexek

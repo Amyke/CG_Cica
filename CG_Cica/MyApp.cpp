@@ -9,6 +9,7 @@
 #include <imgui/imgui.h>
 
 #include "ObjectFactory.h"
+#include "ObjParser_OGL3.h"
 
 
 CMyApp::CMyApp(void)
@@ -276,6 +277,15 @@ void CMyApp::createScene() {
     normalMode->add_child(std::move(mountainScale));
     normalMode->add_child(std::move(transformLB));
     normalMode->add_child(std::move(transformRT));
+
+    auto cicaObj = ObjParser::parse("cat.obj");
+    auto cica = std::make_shared<ObjectNode>(std::move(cicaObj));
+    auto cicaPosition = std::make_shared<TransformationNode>(
+        glm::translate(glm::vec3(0, -0.75, 0)) *
+        glm::scale(glm::vec3(3, 3, 3))
+    );
+    cicaPosition->add_child(cica);
+    normalMode->add_child(cicaPosition);
 
     m_scene.root->add_child(std::move(normalMode));
 }

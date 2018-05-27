@@ -22,6 +22,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{28dd15bc-57f1-4d1a-a7b0-1f36df3fc779}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hantos">
+      <UniqueIdentifier>{71cbce23-9a66-49ff-99fe-010c42141d5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyApp.h">
@@ -72,6 +75,12 @@
     <ClInclude Include="Noise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh_OGL3.h">
+      <Filter>Hantos</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjParser_OGL3.h">
+      <Filter>Hantos</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyApp.cpp">
@@ -113,6 +122,12 @@
     </ClCompile>
     <ClCompile Include="Noise.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh_OGL3.cpp">
+      <Filter>Hantos</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjParser_OGL3.cpp">
+      <Filter>Hantos</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
