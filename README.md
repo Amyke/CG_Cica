@@ -5,8 +5,8 @@
 - [x] A vízfelület legyen egy kellően nagy méretű négyzet az XZ síkon, ami lassan hullámzik, különböző frekvenciájú szinuszoidok szerint X és Z irányban (tipp: a hullámzás könnyen megvalósítható a vertex shaderben!) (5%)
 - [x] Bump mappinggal vagy normal mappinggal együtt lássuk el víztextúrával! (A szükséges elméletről ITT találsz diákat) (15%)
 
-- [ ] A pályát vegye körbe egy hegyvonulat; a hegyet alkotó vertexek X és Z pozíciója legyen fix, de az Y magasságuk legyen véletlen generált. Vigyázzunk, hogy a véletlen generálás során ne kapjunk absztrakt/lehetetlenül kinéző hegyeket! Azaz a hegyvonulatot alkotó vertexek közül az egymáshoz közel esők Y magasságértéke legyen hasonló! (5%)
-- [ ] A hegy színe az egyes vertexek/fregmensek esetén Y érték szerint változzon: azok a vertexek vagy fregmensek, akik vízszinten vannak, legyenek zöldek, és minél magasabban helyezkedik el egy vertex vagy fregmens, annál fehérebb! (5%)
+- [x] A pályát vegye körbe egy hegyvonulat; a hegyet alkotó vertexek X és Z pozíciója legyen fix, de az Y magasságuk legyen véletlen generált. Vigyázzunk, hogy a véletlen generálás során ne kapjunk absztrakt/lehetetlenül kinéző hegyeket! Azaz a hegyvonulatot alkotó vertexek közül az egymáshoz közel esők Y magasságértéke legyen hasonló! (5%)
+- [x] A hegy színe az egyes vertexek/fregmensek esetén Y érték szerint változzon: azok a vertexek vagy fregmensek, akik vízszinten vannak, legyenek zöldek, és minél magasabban helyezkedik el egy vertex vagy fregmens, annál fehérebb! (5%)
 
 - [x] A pálya két átellenes sarkán legyen egy-egy világítótorony (henger, tetején kúppal), mindkettőnek a csúcsában legyen egy-egy pontszerű fényforrás. Mindkét fényforrásnak legyen diffúz és spekuláris fénykomponense (ezek legyenek különbözőek!), illetve legyen ambiens fényünk is. (10%)
 - [x] Legyen meg a két torony, ne csak a két fényforrás.
