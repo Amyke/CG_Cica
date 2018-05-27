@@ -59,9 +59,6 @@ protected:
 
     Scene m_scene;
 
-    Object m_waterPlane;
-    Object m_lighthouse;
-
 	gCamera				m_camera;
     bool                m_freeCamera = false;
 
@@ -69,8 +66,6 @@ protected:
     glm::vec3           m_light2;
 
 	// nyers OGL azonosítók
-    GLuint              m_waterTexture;
-    GLuint              m_waterNormalMap;
 	GLuint				m_skyboxTexture;
 
     PlayerCat*          m_player;

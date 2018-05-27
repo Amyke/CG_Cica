@@ -75,16 +75,9 @@ bool CMyApp::Init()
 	2. glBufferData segítségével áttölti a GPU-ra az argumentumban adott tároló értékeit
 
 	*/
-    const std::size_t waterPlaneDefinition = 200;
-    m_waterPlane = ObjectFactory::createPlane(waterPlaneDefinition);
-    m_waterPlane.texture = std::make_unique<TextureObject<>>("water.png");
-    m_waterPlane.normal_map = std::make_unique<TextureObject<>>("water_normal.png");
 
     m_light1 = glm::vec3(-20, 6, -20);
     m_light2 = glm::vec3(20, 6, 20);
-
-    const std::size_t lighthouseDefinition = 100;
-    m_lighthouse = ObjectFactory::createLighthouse(lighthouseDefinition);
 
 	// skybox
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -273,21 +266,25 @@ void CMyApp::Resize(int _w, int _h)
 	m_camera.Resize(_w, _h);
 }
 
-void CMyApp::createScene() {
+std::shared_ptr<Node> createWaterPlane() {
+    const std::size_t waterPlaneDefinition = 200;
+    Object waterPlaneObj = ObjectFactory::createPlane(waterPlaneDefinition);
+    waterPlaneObj.texture = std::make_unique<TextureObject<>>("water.png");
+    waterPlaneObj.normal_map = std::make_unique<TextureObject<>>("water_normal.png");
+
     auto waterMode = std::make_shared<ShaderModeNode>(ShaderMode::Water);
 
     auto waterScale = std::make_shared<TransformationNode>(
-        // glm::translate(glm::vec3(0, 1, 0)) *
         glm::scale(glm::vec3(30.0, 1.0, 30.0))
     );
-    auto waterplane = std::make_shared<ObjectNode>(std::move(m_waterPlane));
+    auto waterplane = std::make_shared<ObjectNode>(std::move(waterPlaneObj));
     waterScale->add_child(std::move(waterplane));
     waterMode->add_child(std::move(waterScale));
 
-    m_scene.root->add_child(std::move(waterMode));
+    return waterMode;
+}
 
-    auto normalMode = std::make_shared<ShaderModeNode>(ShaderMode::Normal);
-
+std::shared_ptr<Node> createMountainRange() {
     Object mountainPlaneObject = ObjectFactory::createMountain(200);
     mountainPlaneObject.normal_map = std::make_unique<TextureObject<>>("mountain_normal.bmp");
     auto mountainPlane = std::make_shared<ObjectNode>(std::move(mountainPlaneObject));
@@ -297,22 +294,16 @@ void CMyApp::createScene() {
         glm::scale(glm::vec3(40, 1, 40))
     );
     mountainScale->add_child(std::move(mountainPlane));
+    return mountainScale;
+}
 
-    auto lighthouse = std::make_shared<ObjectNode>(std::move(m_lighthouse));
+std::shared_ptr<Node> createLighthouse() {
+    const std::size_t lighthouseDefinition = 100;
+    Object lighthouseObj = ObjectFactory::createLighthouse(lighthouseDefinition);
+    return std::make_shared<ObjectNode>(std::move(lighthouseObj));
+}
 
-    glm::mat4 trLB = glm::translate(glm::vec3(m_light1.x, 0, m_light1.z));
-    auto transformLB = std::make_shared<TransformationNode>(trLB);
-
-    glm::mat4 trRT = glm::translate(glm::vec3(m_light2.x, 0, m_light2.z));
-    auto transformRT = std::make_shared<TransformationNode>(trRT);
-
-    transformLB->add_child(lighthouse);
-    transformRT->add_child(lighthouse);
-
-    normalMode->add_child(std::move(mountainScale));
-    normalMode->add_child(std::move(transformLB));
-    normalMode->add_child(std::move(transformRT));
-
+std::shared_ptr<Node> createCica() {
     auto cicaObj = ObjParser::parse("cat.obj");
     auto cica = std::make_shared<ObjectNode>(std::move(cicaObj));
     auto cicaPosition = std::make_shared<TransformationNode>(
@@ -320,7 +311,10 @@ void CMyApp::createScene() {
         glm::scale(glm::vec3(3, 3, 3))
     );
     cicaPosition->add_child(cica);
+    return cicaPosition;
+}
 
+std::shared_ptr<Node> createTurret() {
     auto turretBodyObj = ObjectFactory::createTurretBody(6);
     auto turretBarrelObj = ObjectFactory::createTurretBarrel(50);
 
@@ -338,10 +332,37 @@ void CMyApp::createScene() {
     turretNode->add_child(turretBarrelRot);
     turretNode->add_child(std::make_shared<ObjectNode>(std::move(turretBodyObj)));
 
+    return turretNode;
+}
+
+void CMyApp::createScene() {
+    m_scene.root->add_child(createWaterPlane());
+
+    auto normalMode = std::make_shared<ShaderModeNode>(ShaderMode::Normal);
+
+    normalMode->add_child(createMountainRange());
+
+    auto lighthouse = createLighthouse();
+
+    auto transformLB = std::make_shared<TransformationNode>(
+        glm::translate(glm::vec3(m_light1.x, 0, m_light1.z))
+    );
+    transformLB->add_child(lighthouse);
+    normalMode->add_child(std::move(transformLB));
+
+    auto transformRT = std::make_shared<TransformationNode>(
+        glm::translate(glm::vec3(m_light2.x, 0, m_light2.z))
+    );
+    transformRT->add_child(lighthouse);
+    normalMode->add_child(std::move(transformRT));
+
+    auto cica = createCica();
+    auto turret = createTurret();
+
     for (const auto& entity : entities) {
         auto cicaEnt = std::make_shared<EntityNode>(*entity);
-        cicaEnt->add_child(cicaPosition);
-        cicaEnt->add_child(turretNode);
+        cicaEnt->add_child(cica);
+        cicaEnt->add_child(turret);
         normalMode->add_child(cicaEnt);
     }
 
