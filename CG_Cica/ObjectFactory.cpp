@@ -3,8 +3,11 @@
 #include <cmath>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/compatibility.hpp>
 
 #include <SDL.h>
+
+#include "Noise.h"
 
 struct Vertex {
     glm::vec3 p;
@@ -25,7 +28,7 @@ namespace plane {
             for (std::size_t x = 0; x <= definition; ++x)
             {
                 float texV = (x % 25) / 24.0;
-                vertices.push_back({ glm::vec3{ -1.0 + 2.0 * x / definitionD, 1.0, -1.0 + 2.0 * z / definitionD }, color, glm::vec2{ texU, texV } });
+                vertices.push_back({ glm::vec3{ -1.0 + 2.0 * x / definitionD, 0.0, -1.0 + 2.0 * z / definitionD }, color, glm::vec2{ texU, texV } });
             }
         }
         return vertices;
@@ -56,11 +59,78 @@ namespace plane {
     }
 }
 
+double inverted_lerp(double min, double max, double t) {
+    return (t - min) / (max - min);
+}
+
+namespace mountain {
+    std::vector<Vertex> vertices(std::size_t definition) {
+        std::vector<Vertex> vertices;
+        vertices.reserve(std::pow(definition + 1, 2));
+        glm::vec3 color{ 0.0, 0.5, 0.8 };
+        double definitionD = definition;
+
+        const Perlin perlin;
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+        for (std::size_t z = 0; z <= definition; ++z) {
+            float texU = (z % 25) / 24.0;
+            for (std::size_t x = 0; x <= definition; ++x) {
+                float texV = (x % 25) / 24.0;
+                double xi = 2 * x / definitionD - 1;
+                double zi = 2 * z / definitionD - 1;
+                double length = xi * xi + zi * zi;
+                double y = 2 * length - 1;
+                double noise = perlin.octave_noise(4, x * 20.0 / definitionD, y * 20.0 / definitionD) + 1;
+                y += 0.25 * noise;
+                auto p = glm::vec3{ xi, y, zi };
+                /*p.y = perlin.octave_noise(4, p.x, p.z);
+                min = std::min<double>(min, p.y);
+                max = std::max<double>(max, p.y);
+                p.x = -1.0 + 2.0 * p.x;
+                p.z = -1.0 + 2.0 * p.z;*/
+                vertices.push_back({ p, color, glm::vec2{ texU, texV } });
+            }
+        }
+        /*for (auto& vert : vertices) {
+            vert.p.y = inverted_lerp(min, max, vert.p.y);
+        }*/
+        return vertices;
+    }
+}
+
 namespace ObjectFactory {
     Object createPlane(std::size_t definition) {
         Object ret;
 
         auto vertices = plane::vertices(definition);
+        auto indices = plane::indices(definition);
+
+        ArrayBuffer vbo;
+        ret.vbo.BufferData(vertices);
+        ret.ibo.BufferData(indices);
+
+        ret.vao.Init({
+            { CreateAttribute<0, glm::vec3, 0, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<1, glm::vec3, sizeof glm::vec3, sizeof Vertex>, ret.vbo },
+            { CreateAttribute<2, glm::vec2, 2 * sizeof glm::vec3, sizeof Vertex>, ret.vbo }
+        }, ret.ibo);
+
+        return ret;
+    }
+
+    Object createMountain(std::size_t definition) {
+        Object ret;
+
+        auto vertices = mountain::vertices(definition);
+        glm::vec3 white(1, 1, 1);
+        glm::vec3 green(52.0 / 256, 150.0 / 256, 62.0 / 256);
+        for (auto& vert : vertices) {
+            if (std::abs(vert.p.x * 2) < 1.0 && std::abs(vert.p.z * 2) < 1.0) {
+                vert.p.y = -1;
+            }
+            vert.c = glm::lerp(green, white, vert.p.y - 1);
+        }
         auto indices = plane::indices(definition);
 
         ArrayBuffer vbo;

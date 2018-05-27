@@ -240,7 +240,10 @@ void CMyApp::Resize(int _w, int _h)
 void CMyApp::createScene() {
     auto waterMode = std::make_shared<ShaderModeNode>(ShaderMode::Water);
 
-    auto waterScale = std::make_shared<TransformationNode>(glm::scale(glm::vec3(20.0, 1.0, 20.0)));
+    auto waterScale = std::make_shared<TransformationNode>(
+        // glm::translate(glm::vec3(0, 1, 0)) *
+        glm::scale(glm::vec3(30.0, 1.0, 30.0))
+    );
     auto waterplane = std::make_shared<ObjectNode>(std::move(m_waterPlane));
     waterScale->add_child(std::move(waterplane));
     waterMode->add_child(std::move(waterScale));
@@ -248,6 +251,15 @@ void CMyApp::createScene() {
     m_scene.root->add_child(std::move(waterMode));
 
     auto normalMode = std::make_shared<ShaderModeNode>(ShaderMode::Normal);
+
+    Object mountainPlaneObject = ObjectFactory::createMountain(200);
+    auto mountainPlane = std::make_shared<ObjectNode>(std::move(mountainPlaneObject));
+
+    auto mountainScale = std::make_shared<TransformationNode>(
+        glm::scale(glm::vec3(1, 1, 1)) *
+        glm::scale(glm::vec3(40, 1, 40))
+    );
+    mountainScale->add_child(std::move(mountainPlane));
 
     auto lighthouse = std::make_shared<ObjectNode>(std::move(m_lighthouse));
 
@@ -260,6 +272,7 @@ void CMyApp::createScene() {
     transformLB->add_child(lighthouse);
     transformRT->add_child(lighthouse);
 
+    normalMode->add_child(std::move(mountainScale));
     normalMode->add_child(std::move(transformLB));
     normalMode->add_child(std::move(transformRT));
 
