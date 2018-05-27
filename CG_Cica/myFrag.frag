@@ -17,6 +17,7 @@ uniform vec3 light1_pos;
 uniform vec3 light2_pos;
 
 uniform bool use_texture;
+uniform bool use_normal;
 
 vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 {
@@ -49,11 +50,14 @@ vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
 
 void main()
 {
-	vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
-	vec4 norm = worldIT * vec4(normalFromMap, 0);
+	vec3 normal = vec3(0, 1, 0);
+	if (use_normal) {
+		vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
+		normal = (worldIT * vec4(normalFromMap, 0)).xyz;
+	}
 	vec4 lights =
-		getPointLight(light1_pos, vs_out_pos, norm.xyz) +
-		getPointLight(light2_pos, vs_out_pos, norm.xyz);
+		getPointLight(light1_pos, vs_out_pos, normal) +
+		getPointLight(light2_pos, vs_out_pos, normal);
 	if (use_texture)
 	{
 		fs_out_col = texture(texture_, vs_out_texture) * lights;

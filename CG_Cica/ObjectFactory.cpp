@@ -84,17 +84,9 @@ namespace mountain {
                 double noise = perlin.octave_noise(4, x * 20.0 / definitionD, y * 20.0 / definitionD) + 1;
                 y += 0.25 * noise;
                 auto p = glm::vec3{ xi, y, zi };
-                /*p.y = perlin.octave_noise(4, p.x, p.z);
-                min = std::min<double>(min, p.y);
-                max = std::max<double>(max, p.y);
-                p.x = -1.0 + 2.0 * p.x;
-                p.z = -1.0 + 2.0 * p.z;*/
                 vertices.push_back({ p, color, glm::vec2{ texU, texV } });
             }
         }
-        /*for (auto& vert : vertices) {
-            vert.p.y = inverted_lerp(min, max, vert.p.y);
-        }*/
         return vertices;
     }
 }
@@ -129,11 +121,11 @@ namespace ObjectFactory {
         for (auto& vert : vertices) {
             if (std::abs(vert.p.x * 2) < 1.0 && std::abs(vert.p.z * 2) < 1.0) {
                 vert.p.y = -1;
-            } else {
+            } /*else {
                 auto x = vert.p.x * .5 + .5;
                 auto z = vert.p.z * .5 + .5;
                 vert.p.y += 1.5 * perlin.octave_noise(8, x * 0.2, z * 0.2);
-            }
+            }*/
             vert.c = glm::lerp(green, white, vert.p.y - 1);
         }
         auto indices = plane::indices(definition);
