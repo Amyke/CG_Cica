@@ -14,7 +14,9 @@
 - [ ] Modellezzünk csatahajókat! A csatahajók legyenek textúrázottak; a modellezésnél nem kell túlzásba esni, de ránézésre fel lehessen ismerni, hogy csatahajóról van szó! (5%)
 - [x] Minden csatahajónak legyen lövegtornya (sokszög alapú hasábból és hengerből), a lövegtornyok külön tudnak forogni: egyrészt körbe tudjuk forgatni 360 fokkal, másrészt fel-le tudjuk állítani bizonyos dőlésszögben (vízszinteshez képest lefele 20 fokkal, felfele 60 fokkal). Több hajót is helyezzünk el a színtéren (legalább ötöt), ezek közül egyet mi fogunk irányítani, a többit a "mesterséges intelligencia". (5%)
 
-- [ ] A hajók haladni tudnak a vízen. A hajók az alábbi mozgára képesek: mozgás előre, mozgás hátra, fordulás, valamint a lövegtorony kezelése. A mozgás minden esetben legyen sima, azaz a fordulás is legyen animált (ne "ugorjon" a hajó). A hajók közül egyet mi irányíthatunk, a többi esetén az irányításba nincs beleszólásunk. Minden hajó követi a víz hullámzását! (Sose merül el, de nem is lebeg a víz felett.) (10%)
+- [x] A hajók haladni tudnak a vízen. A hajók az alábbi mozgára képesek: mozgás előre, mozgás hátra, fordulás, valamint a lövegtorony kezelése. A mozgás minden esetben legyen sima, azaz a fordulás is legyen animált (ne "ugorjon" a hajó). A hajók közül egyet mi irányíthatunk, a többi esetén az irányításba nincs beleszólásunk.
+- [ ] Minden hajó követi a víz hullámzását! (Sose merül el, de nem is lebeg a víz felett.) (10%)
+
 - [x] A hajók gyorsulva illetve lassulva haladjanak (egy bizonyos maximális sebességig), ha fordulni kezdenek, veszítenek a sebességükből. (5%)
 
 - [ ] A hajók lövegtornyával lehessen lőni. Ekkor egy szürke henger (a lövedék) hagyja el a lövegtornyot az adott irányba. A lövedékre hat a gravitáció, azaz a lövedék egy parabola-pályát ír le. (5%)
