@@ -19,33 +19,63 @@ uniform vec3 light2_pos;
 uniform bool use_texture;
 uniform bool use_normal;
 
-vec4 getPointLight(vec3 light_pos, vec3 pos, vec3 norm)
-{
-	vec4 La = vec4(0.2, 0.2, 0.2, 1);
-	vec4 Ka = vec4(1, 1, 1, 1);
-	vec4 ambient = La * Ka;
+#define MAX_LIGHTS 10
+uniform int num_lights;
+uniform struct Light {
+    vec3 position;
 
-	vec4 Ld = vec4(0.2, 0.2, 0.5, 1);
-	vec4 Kd = vec4(0.2, 0.5, 1, 1);
-	vec3 normal = normalize(norm);
-	vec3 toLight = normalize(light_pos - pos);
-	float di = clamp( dot( toLight, normal), 0.0f, 1.0f );
-	vec4 diffuse = Ld*Kd*di;
+    vec3 ambientIntensity;
+    vec3 diffuseIntensity;
+    vec3 specularIntensity;
 
-	vec4 Ls = vec4(5, 0.2, 0.2, 1);
-	vec4 Ks = vec4(2, 1, 0.0, 1);
-	const float specular_power = 8;
-	vec4 specular = vec4(0);
+    float attenuation;
+    float ambientCoefficient;
 
-	if ( di > 0 ) // spekuláris komponens csak akkor van, ha diffúz is
-	{
-		vec3 e = normalize( eye_pos - pos );
-		vec3 r = reflect( -toLight, normal );
-		float si = pow( clamp( dot(e, r), 0.0f, 1.0f ), specular_power );
-		specular = Ls*Ks*si;
+    float coneAngle;
+    vec3 coneDirection;
+} lights[MAX_LIGHTS];
+
+vec4 applyLight(Light light, vec3 surfaceColor, vec3 normal, vec3 surfacePosition, vec3 surfaceToCamera) {
+	vec3 ambient = light.ambientCoefficient * light.ambientIntensity * surfaceColor.rgb;
+
+	vec3 surfaceToLight = normalize(light.position - surfacePosition);
+	float distanceToLight = length(light.position - surfacePosition);
+
+	float attenuation = 1.0 / (1.0 + light.attenuation * pow(distanceToLight, 2));
+
+	float lightToSurfaceAngle = degrees(acos(dot(-surfaceToLight, normalize(light.coneDirection))));
+    if (lightToSurfaceAngle > light.coneAngle) {
+        attenuation = 0.0;
+    }
+
+	float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+    vec3 diffuse = diffuseCoefficient * surfaceColor.rgb * light.diffuseIntensity;
+
+	float specularCoefficient = 0.0;
+    if (diffuseCoefficient > 0.0) {
+		float reflectionAngle = dot(surfaceToCamera, reflect(-surfaceToLight, normal));
+		float clamped = clamp(reflectionAngle, 0.0f, 1.0f);
+
+		float materialShininess = 8;
+
+        specularCoefficient = pow(clamped, materialShininess);
 	}
 
-	return ambient + diffuse + specular;
+	vec3 materialSpecularColor = vec3(2, 1, 0.0);
+    vec3 specular = specularCoefficient * materialSpecularColor * light.specularIntensity;
+
+	vec3 lightColor =
+		ambient +
+		attenuation * (diffuse + specular);
+	return vec4(lightColor, 1);
+}
+
+vec4 getLights(vec3 surfaceColor, vec3 normal, vec3 surfacePosition, vec3 surfaceToCamera) {
+	vec4 result = vec4(0);
+	for (int i = 0; i < num_lights; ++i) {
+		result += applyLight(lights[i], surfaceColor.rgb, normal, surfacePosition, surfaceToCamera);
+	}
+	return result;
 }
 
 void main()
@@ -55,15 +85,16 @@ void main()
 		vec3 normalFromMap = 2 * ((texture(normalMap, vs_out_texture.st)).xyz) - 1;
 		normal = (worldIT * vec4(normalFromMap, 0)).xyz;
 	}
-	vec4 lights =
-		getPointLight(light1_pos, vs_out_pos, normal) +
-		getPointLight(light2_pos, vs_out_pos, normal);
 	if (use_texture)
 	{
-		fs_out_col = texture(texture_, vs_out_texture) * lights;
+		vec4 surfaceColor = texture(texture_, vs_out_texture);
+		vec4 lights = getLights(surfaceColor.rgb, normal, vs_out_pos, normalize(eye_pos - vs_out_pos));
+		fs_out_col = surfaceColor * lights;
 	}
 	else
 	{
-		fs_out_col = vs_out_col * lights;
+		vec4 surfaceColor = vec4(vs_out_col, 1);
+		vec4 lights = getLights(surfaceColor.rgb, normal, vs_out_pos, normalize(eye_pos - vs_out_pos));
+		fs_out_col = surfaceColor * lights;
 	}
 }

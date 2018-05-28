@@ -24,6 +24,10 @@ public:
 
     const Turret& getTurret() const;
 
+    glm::vec3 getDirection() const {
+        return direction;
+    }
+
 protected:
     glm::vec3 direction = { 1, 0, 0 };
     float speed = 0.0f;

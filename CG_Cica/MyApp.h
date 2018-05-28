@@ -28,6 +28,20 @@
 
 class PlayerCat;
 
+struct Light {
+    glm::vec3 position;
+
+    glm::vec3 ambientIntensity;
+    glm::vec3 diffuseIntensity;
+    glm::vec3 specularIntensity;
+
+    float attenuation;
+    float ambientCoefficient;
+
+    float coneAngle;
+    glm::vec3 coneDirection;
+};
+
 class CMyApp
 {
 public:
@@ -62,8 +76,7 @@ protected:
 	gCamera				m_camera;
     bool                m_freeCamera = false;
 
-    glm::vec3           m_light1;
-    glm::vec3           m_light2;
+    std::vector<Light>  m_lights;
 
 	// nyers OGL azonosítók
 	GLuint				m_skyboxTexture;

@@ -13,6 +13,27 @@
 #include "ObjParser_OGL3.h"
 #include "Turret.h"
 
+template<typename T>
+void setLightUniform(ProgramObject& shader, int i, std::string name, const T& value);
+
+struct SetLightPosition : Node {
+    SetLightPosition(int i_, const Light& light_, const Cat& cat_)
+        : i(i_), light(light_), cat(cat_) {
+    }
+
+    void render(ProgramObject& shader, glm::mat4 vp, glm::mat4 m) {
+        glm::mat4 MVP = vp * m;
+        glm::vec3 position = MVP * glm::vec4(light.position, 1);
+        setLightUniform(shader, i, "position", position);
+        glm::vec3 direction = MVP * glm::vec4(cat.getDirection(), 1);
+        setLightUniform(shader, i, "coneDirection", direction);
+    }
+
+    int i;
+    const Light& light;
+    const Cat& cat;
+};
+
 
 CMyApp::CMyApp(void)
     : m_scene(std::make_unique<Node>())
@@ -77,8 +98,38 @@ bool CMyApp::Init()
 
 	*/
 
-    m_light1 = glm::vec3(-20, 6, -20);
-    m_light2 = glm::vec3(20, 6, 20);
+    m_lights = {
+        Light{
+            glm::vec3{ -20, 6, -20 },
+            glm::vec3{ 0.4, 0.4, 0.4 },
+            glm::vec3{ 0.8, 0.8, 0.2 },
+            glm::vec3{ 0.0, 0.6, 0.2 },
+            0.0f,
+            1.0f,
+            180.0f,
+            glm::vec3{ 1, 1, 1 }
+        },
+        Light{
+            glm::vec3{ 20, 6, 20 },
+            glm::vec3{ 0.2, 0.2, 0.2 },
+            glm::vec3{ 0.2, 0.2, 0.5 },
+            glm::vec3{ 1.0, 0.2, 0.2 },
+            0.0f,
+            1.0f,
+            180.0f,
+            glm::vec3{ 1, 1, 1 }
+        },
+        Light{
+            glm::vec3{ 1, 1, 1 },
+            glm::vec3{ 1, 1, 1 },
+            glm::vec3{ 0, 1, 0 },
+            glm::vec3{ 0.0, 1.2, 0 },
+            0.0f,
+            0.0f,
+            30.0f,
+            glm::vec3{ -1, -1, -1 }
+        }
+    };
 
 	// skybox
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -167,6 +218,12 @@ void CMyApp::Update()
 	last_time = SDL_GetTicks();
 }
 
+template<typename T>
+void setLightUniform(ProgramObject& shader, int i, std::string name, const T& value) {
+    std::string uniformName = "lights[" + std::to_string(i) + "]." + name;
+    shader.SetUniform(uniformName.c_str(), value);
+}
+
 void CMyApp::Render()
 {
 	// töröljük a frampuffert (GL_COLOR_BUFFER_BIT) és a mélységi Z puffert (GL_DEPTH_BUFFER_BIT)
@@ -178,11 +235,20 @@ void CMyApp::Render()
     m_program.SetUniform("eye_pos", m_camera.GetEye());
 
     glm::mat4 MVP = m_camera.GetViewProj();
-    glm::vec3 light1 = MVP * glm::vec4(m_light1, 1);
-    glm::vec3 light2 = MVP * glm::vec4(m_light2, 1);
 
-    m_program.SetUniform("light1_pos", light1);
-    m_program.SetUniform("light2_pos", light2);
+    m_program.SetUniform("num_lights", static_cast<int>(m_lights.size()));
+    for (int i = 0; i < m_lights.size(); ++i) {
+        const auto& light = m_lights[i];
+        glm::vec3 position = MVP * glm::vec4(light.position, 1);
+        setLightUniform(m_program, i, "position", position);
+        setLightUniform(m_program, i, "ambientIntensity", light.ambientIntensity);
+        setLightUniform(m_program, i, "diffuseIntensity", light.diffuseIntensity);
+        setLightUniform(m_program, i, "specularIntensity", light.specularIntensity);
+        setLightUniform(m_program, i, "attenuation", light.attenuation);
+        setLightUniform(m_program, i, "ambientCoefficient", light.ambientCoefficient);
+        setLightUniform(m_program, i, "coneAngle", light.coneAngle);
+        setLightUniform(m_program, i, "coneDirection", light.coneDirection);
+    }
 
     m_scene.render(m_program, m_camera.GetProj(), m_camera.GetViewMatrix());
 
@@ -345,14 +411,16 @@ void CMyApp::createScene() {
 
     auto lighthouse = createLighthouse();
 
+    auto light1 = m_lights[0].position;
     auto transformLB = std::make_shared<TransformationNode>(
-        glm::translate(glm::vec3(m_light1.x, 0, m_light1.z))
+        glm::translate(glm::vec3(light1.x, 0, light1.z))
     );
     transformLB->add_child(lighthouse);
     normalMode->add_child(std::move(transformLB));
 
+    auto light2 = m_lights[1].position;
     auto transformRT = std::make_shared<TransformationNode>(
-        glm::translate(glm::vec3(m_light2.x, 0, m_light2.z))
+        glm::translate(glm::vec3(light2.x, 0, light2.z))
     );
     transformRT->add_child(lighthouse);
     normalMode->add_child(std::move(transformRT));
@@ -371,6 +439,9 @@ void CMyApp::createScene() {
         auto turretEnt = std::make_shared<EntityNode>(cicaEnt->getTurret());
         turretEnt->add_child(turret);
         cicaNode->add_child(turretEnt);
+        if (dynamic_cast<const PlayerCat*>(cicaEnt) != nullptr) {
+            cicaNode->add_child(std::make_shared<SetLightPosition>(2, m_lights[2], *cicaEnt));
+        }
         normalMode->add_child(cicaNode);
     }
 
